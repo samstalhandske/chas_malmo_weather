@@ -8,7 +8,7 @@ Greeting Message (LUNDH)
 Loopa programmets UI (ISA)
 
 
-----
+---- 
 Databas textsträng
 Bearbeta databassträng
 struct med city databassträng array med struct  (SAM)

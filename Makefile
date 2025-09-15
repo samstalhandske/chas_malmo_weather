@@ -3,6 +3,7 @@ CC 		 ?= gcc
 CFLAGS ?= -std=c90 -Iinclude -Wall -Wextra -O2 -MMD -MP
 SRC := $(wildcard src/*.c)
 MODE ?= release
+LDFLAGS = -lcurl
 
 ifeq ($(MODE),debug)
  CFLAGS += -g -O0
@@ -19,7 +20,7 @@ all: $(BIN)
 
 $(BIN): $(OBJ)
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 				
 $(OUTDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
