@@ -9,7 +9,10 @@ int citySelect()
 
     listCities();
     printf("Enter a number to select city; ");
-    scanf("%d", &choice);
+    int scanfResult = scanf("%d", &choice);
+	if(scanfResult <= 0){
+		return -1;
+	}
 
     return choice;
 }
