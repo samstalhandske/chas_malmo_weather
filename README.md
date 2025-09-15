@@ -4,16 +4,16 @@
 
 C90/89
 
-Greeting Message (LUNDH)
+Greeting Message (Jonathan)
 Loopa programmets UI (ISA)
 
 
-----
+---- 
 Databas textsträng
 Bearbeta databassträng
-struct med city databassträng array med struct  (SAM)
-bygga URL baserat på databassträngen (JONATHAN)
-Lista avilable cities (LUKAS)
+struct med city databassträng array med struct  (LUNDH)
+bygga URL baserat på databassträngen (LUNDH)
+Lista avilable cities (LUNDH)
 ---
 
 user input
