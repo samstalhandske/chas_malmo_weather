@@ -4,13 +4,13 @@
 #include <curl/curl.h>
 
 typedef struct Http Http;
-typedef struct Http
+struct Http
 {
     CURL* curl;
 
     int (*Perform)(Http* h, const char* data);
     void (*Dispose)(Http* h);
-}Http;
+};
 
 int HttpInitialize(Http* h);
 int Perform(Http* h, const char* data);
