@@ -8,5 +8,9 @@ typedef struct {
     char URL[256];
 } cityDatabase;
 
+void buildDatabase();
+void listCities();
+int citySelect();
+char* fetchUrl();
 
 #endif

@@ -13,8 +13,6 @@ int main() {
 	
 	while (programShouldExit == false) {
 		int perErrorCode = Perform(&h, fetchUrl());
-		
-		
 
 	}
 	h.Dispose(&h);
