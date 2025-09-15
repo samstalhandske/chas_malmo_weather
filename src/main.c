@@ -3,6 +3,17 @@
 #include <data.h>
 #include <http.h>
 
+int citySelect()
+{
+    int choice;
+
+    listCities();
+    printf("Enter a number to select city; ");
+    scanf("%d", &choice);
+
+    return choice;
+}
+
 int main() {
 	bool programShouldExit = false;
 	Http h;
@@ -12,7 +23,13 @@ int main() {
 	buildDatabase();
 	
 	while (programShouldExit == false) {
-		int perErrorCode = Perform(&h, fetchUrl());
+		int choice = citySelect();
+		if(choice < 1 || choice > 16)
+		{
+			printf("Invalid selection!\n");
+			continue;
+		}
+		int perErrorCode = Perform(&h, fetchUrl(choice));
 
 	}
 	h.Dispose(&h);

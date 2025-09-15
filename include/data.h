@@ -11,6 +11,6 @@ typedef struct {
 void buildDatabase();
 void listCities();
 int citySelect();
-char* fetchUrl();
+char* fetchUrl(int);
 
 #endif

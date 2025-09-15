@@ -44,19 +44,7 @@ void listCities()
     }
 }
 
-int citySelect()
+char* fetchUrl(int selectedCityIndex)
 {
-    int choice;
-
-    listCities();
-    printf("Enter a number to select city; ");
-    scanf("%d", &choice);
-
-    return choice;
-}
-
-char* fetchUrl()
-{
-    int selectedCity = citySelect();
-    return cityArray[selectedCity - 1].URL;
+    return cityArray[selectedCityIndex - 1].URL;
 }
