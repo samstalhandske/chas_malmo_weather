@@ -12,17 +12,18 @@ void buildDatabase()
 
     while (*ptr) 
     {
-        char city[100];
+        char name[100];
         double lat, lon;
-        int n = sscanf(ptr, "%99[^:]:%lf:%lf\n", city, &lat, &lon);
-                
+        int n = sscanf(ptr, "%99[^:]:%lf:%lf\n", name, &lat, &lon);
+
         if (n == 3) 
         {
-            strcpy(cityArray[count].name, city);
-            cityArray[count].latitude = lat;
-            cityArray[count].longitude = lon;
+            cityDatabase* city = &cityArray[count];
+            strcpy(city->name, name);
+            city->latitude = lat;
+            city->longitude = lon;
             
-            sprintf(cityArray[count].URL,
+            snprintf(&city->URL[0], sizeof(city->URL),
                 "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true", lat, lon);
             count++;
         }
