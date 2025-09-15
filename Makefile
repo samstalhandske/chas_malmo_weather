@@ -1,6 +1,6 @@
 # --- Basvariabler --
 CC 		 ?= gcc
-CFLAGS ?= -std=c11 -Iinclude -Wall -Wextra -O2 -MMD -MP
+CFLAGS ?= -std=c90 -Iinclude -Wall -Wextra -O2 -MMD -MP
 SRC := $(wildcard src/*.c)
 MODE ?= release
 
