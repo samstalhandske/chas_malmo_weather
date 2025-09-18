@@ -2,40 +2,47 @@
 #include <stdbool.h>
 #include <data.h>
 #include <http.h>
-
-int citySelect()
-{
-    int choice;
-
-    listCities();
-    printf("Enter a number to select city; ");
-    int scanfResult = scanf("%d", &choice);
-	if(scanfResult <= 0){
-		return -1;
-	}
-
-    return choice;
-}
+#include <assert.h>
 
 int main() {
 	bool programShouldExit = false;
+
 	Http h;
 	int errorCode = HttpInitialize(&h);
+	assert(errorCode == 0);
 	
 	printf("Welcome to this weather app\n");
 	buildDatabase();
 	
 	while (programShouldExit == false) {
-		int choice = citySelect();
-		if(choice < 1 || choice > 16)
+		listCities();
+		printf("Enter a number to select city; ");
+
+		int choice;
+		int scanfResult = scanf("%d", &choice);
+		if(scanfResult <= 0){
+			return -1;
+		}
+		
+		if(choice < 1 || choice > 16) /* TODO: SS - Don't hardcode 16 here. */
 		{
 			printf("Invalid selection!\n");
 			continue;
 		}
-		int perErrorCode = Perform(&h, fetchUrl(choice));
 
+		Http_Response response = {0};
+		int perErrorCode = Perform(&h, fetchUrl(choice), &response);
+		printf("Perform, error-code: %i.\n", perErrorCode);
+
+		if (perErrorCode != 0) {
+			continue;
+		}
+		
+		printf("%s\n", response.data);
+		Http_Dispose_Response(&response);
 	}
-	h.Dispose(&h);
+
+	Dispose(&h);
 	return 0;
 }
  

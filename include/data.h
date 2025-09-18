@@ -6,7 +6,7 @@ typedef struct {
     double longitude;
     double latitude;
     char URL[256];
-} cityDatabase;
+} City;
 
 void buildDatabase();
 void listCities();
