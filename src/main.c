@@ -33,13 +33,12 @@ int main() {
 
 		int choice;
 		int scanfResult = scanf("%d", &choice);
-		if(scanfResult <= 0){
-			return -1;
-		}
 		
-		if(choice < 1 || choice > 16) /* TODO: SS - Don't hardcode 16 here. */
+		
+		if(choice < 1 || choice > 16 || scanfResult <=0) /* TODO: SS - Don't hardcode 16 here. */
 		{
-			printf("Invalid selection!\n");
+			printf("Invalid selection!\n"); 
+			while ((getchar()) != '\n');
 			continue;
 		}
 
