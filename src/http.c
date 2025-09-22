@@ -1,6 +1,6 @@
 #include "http.h"
 #include <stdlib.h>
-
+#include <string.h>
 #include <curl/curl.h>
 
 static size_t http_response_write_callback(void* contents, size_t size, size_t nmemb, void* userp)
