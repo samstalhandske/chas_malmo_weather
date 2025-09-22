@@ -55,3 +55,6 @@ dkms.conf
 *.dwo
 .vscode/settings.json
 build/
+
+# other
+*.json
