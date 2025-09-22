@@ -4,8 +4,8 @@
 #include <curl/curl.h>
 
 typedef struct {
-
-} HTTP;
+    CURL* curl;
+} Http;
 
 typedef enum {
     INIT_CURL_OK,
@@ -13,6 +13,18 @@ typedef enum {
 } Init_CURL_Response;
 
 Init_CURL_Response init_curl();
+
+typedef struct 
+{
+    char* data;
+    int size;
+} Http_Response;
+
+int Http_Initialize(Http* h);
+int Http_Perform(Http* h, const char* data, Http_Response* response);
+void Http_Dispose_Response(Http_Response* response);
+void Http_Dispose(Http* h);
+
 
 /* Initialize */
 /* Dispose */
