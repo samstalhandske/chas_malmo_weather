@@ -3,6 +3,7 @@
 #include <data.h>
 #include <http.h>
 #include <assert.h>
+#include "mcore/json/fileHelper/fileHelper.h"
 
 #include "mcore/http/http.h"
 #include "mcore/json/json.h"
@@ -17,13 +18,12 @@ int main() {
 	printf("Welcome to this weather app\n");
 	buildDatabase();
 
-	FILE *cached_weather_file = fopen("weather.json", "w");
-	assert(cached_weather_file != NULL);
-	if(cached_weather_file == NULL) {
-		/* Vi lyckades inte öppna. Dåligt! */
-		printf("FIX THIS!\n");
-		assert(false);
+	cJSON* my_JSON_Object = Read_JSON_From_File("file.json");
+	if(my_JSON_Object == NULL){
+		my_JSON_Object = cJSON_CreateObject();
 	}
+	printf("%s", cJSON_Print(my_JSON_Object));
+	Write_JSON_To_File("file.json", my_JSON_Object);	
 
 	/* TODO: Hämta data från cachade väderfilen och lägg i den i vår databas. */
 
@@ -51,49 +51,7 @@ int main() {
 			continue;
 		}
 
-		{ /* JSON Experiments*/
-			cJSON *my_root_object = cJSON_CreateObject();
-			cJSON *hej_string_object = cJSON_CreateString("Hej");
-			
-			cJSON_AddItemToObject(my_root_object, "name", hej_string_object);
-			
-			printf("Skriv detta till fil: %s\n", cJSON_Print(my_root_object));
-			FILE *f = fopen("file.json", "w");
-			if (f == NULL)
-			{
-				printf("Error opening file!\n");
-				exit(1);
-			}
-			
-			fprintf(f, cJSON_Print(my_root_object));
-			fclose(f);
-			
-			FILE *file = fopen("file.json", "r");
-			fseek(file, 0, SEEK_END);
-			long length = ftell(file);
-			rewind(file);
-			
-			char* JsonString = malloc(length + 1);
-			if (JsonString == NULL) {
-				fclose(file);
-				fprintf(stderr, "Memory allocation failed\n");
-				return;
-			}
-			
-			fread(JsonString, 1, length, file);
-			JsonString[length] = '\0';
-			fclose(file);
-			
-			cJSON* CityArrayJSON = cJSON_Parse(JsonString);
-			printf("This is file: %s\n", cJSON_Print(CityArrayJSON));
-			free(JsonString);
-			
-			cJSON* root = cJSON_Parse(response.data);
-			cJSON* current_weather_object = cJSON_GetObjectItem(root, "current_weather");
-			cJSON* temperature_obj = cJSON_GetObjectItem(current_weather_object, "temperature");
-			
-			printf("Temperature is: %.1f.\n", cJSON_GetNumberValue(temperature_obj));
-		}
+		
 		
 		Http_Dispose_Response(&response);
 	}
