@@ -65,3 +65,18 @@ char* fetchUrl(int selectedCityIndex)
 {
     return cityArray[selectedCityIndex - 1].URL;
 }
+
+char* fetchCityName(int sci)
+{
+    return cityArray[sci - 1].name;
+}
+
+double fetchLatitude(int sci)
+{
+    return cityArray[sci - 1].latitude;
+}
+
+double fetchLongitude(int sci)
+{
+    return cityArray[sci - 1].longitude;
+}
