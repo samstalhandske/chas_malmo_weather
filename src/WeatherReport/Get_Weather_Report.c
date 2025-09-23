@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../mcore/json/cJSON/cJSON.h"
-#include "../data.h"
+#include "mcore/json/cJSON/cJSON.h"
+#include "city.h"
 #include "Get_Weather_Report.h"
 #include <string.h>
 #include <sys/stat.h>
@@ -96,7 +96,7 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
         else {
             printf("CACHED DATA USED.\n");
         }
-        printf("Det var %.0f sekunder sedan filen ändrades.\n", skillnad);
+        printf("Det var %.0f sekunder sedan filen ï¿½ndrades.\n", skillnad);
 
         
         

@@ -3,10 +3,10 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "../mcore/json/cJSON/cJSON.h"
-#include "../data.h"
+#include "mcore/json/cJSON/cJSON.h"
+#include "city.h"
 
-#include "../mcore/http/http.h"
+#include "mcore/http/http.h"
 
 typedef struct {
     char* cityname; 
