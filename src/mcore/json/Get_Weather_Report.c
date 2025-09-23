@@ -23,7 +23,6 @@ char* WMOInterpreter(int _WMOCode);
     char* description;      verbose weather description from OpenMeteo docs: https://open-meteo.com/en/docs#weather_variable_documentation
 */
 Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude){
-    printf("Get_Weather_Report>> start of Get_Weather_Report\n");
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
 
     snprintf(api_url, sizeof(api_url), "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
@@ -42,9 +41,7 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
 
     /* HTTP CALL */
     Http myHttp;
-    Http_Response* Response = malloc(sizeof(Http_Response));
-    Response->data = NULL;
-    Response->size = 0;
+    Http_Response* Response = calloc(1, sizeof(Http_Response));
 
     int ErrCode = Http_Initialize(&myHttp);
     assert(ErrCode == 0);
@@ -83,13 +80,6 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
             return NULL;
         }
     }
-
-    /* printf("%s\n", cJSON_Print(JsonRoot)); */
-
-    /* printf("%s\n", cJSON_Print(JsonRoot));*/ /* Print all JSON content */
-    Http_Dispose_Response(Response);
-    
-
 
     cJSON* CurrentWeatherBlob = cJSON_GetObjectItemCaseSensitive(JsonRoot, "current_weather"); 
     
@@ -131,7 +121,7 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
 */
 
     cJSON_Delete(JsonRoot);
-    Http_Dispose_Response(&Response);
+    Http_Dispose_Response(Response);
     Http_Dispose(&myHttp);
     /*free(Response); */
     Response = NULL;

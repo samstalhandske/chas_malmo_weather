@@ -61,22 +61,13 @@ void listCities()
     }
 }
 
-char* fetchUrl(int selectedCityIndex)
-{
-    return cityArray[selectedCityIndex - 1].URL;
-}
+City* fetchCity(int selectedCityIndex) {
+    if(selectedCityIndex < 0) {
+        return NULL;
+    }
+    if(selectedCityIndex >= sizeof(cityArray) / sizeof(cityArray[0])) {
+        return NULL;
+    }
 
-char* fetchCityName(int sci)
-{
-    return cityArray[sci - 1].name;
-}
-
-double fetchLatitude(int sci)
-{
-    return cityArray[sci - 1].latitude;
-}
-
-double fetchLongitude(int sci)
-{
-    return cityArray[sci - 1].longitude;
+    return &cityArray[selectedCityIndex];
 }

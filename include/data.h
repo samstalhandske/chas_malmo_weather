@@ -11,8 +11,6 @@ typedef struct {
 void buildDatabase();
 void listCities();
 int citySelect();
-char* fetchUrl(int);
-char* fetchCityName(int selectedCityIndex);
-double fetchLatitude(int sci);
-double fetchLongitude(int sci);
+City* fetchCity(int choice);
+
 #endif
