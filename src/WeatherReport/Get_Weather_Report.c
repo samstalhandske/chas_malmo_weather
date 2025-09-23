@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include "../mcore/json/fileHelper/fileHelper.h"
 
 
 #include "../mcore/http/http.h"
@@ -81,7 +82,7 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
 
         if (stat(JsonString, &filinfo) == -1) {
             perror("stat");
-            return 1;
+            return NULL;
         }
     
         
