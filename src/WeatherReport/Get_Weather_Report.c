@@ -29,7 +29,7 @@ char* WMOInterpreter(int _WMOCode);
 
 Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude){
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
-    char* JsonString = malloc(strlen(_CityName + 6)); /* +4 for ".json" and +1 for null terminator */
+    char* JsonString = malloc(strlen(_CityName) + 6); /* +4 for ".json" and +1 for null terminator */
     sprintf(JsonString, "%s.json", _CityName);
     
     snprintf(api_url, sizeof(api_url), "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
