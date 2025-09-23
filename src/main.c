@@ -37,8 +37,6 @@ int main() {
 		
 		if(choice < 1 || choice > 16 || scanfResult <= 0) /* TODO: SS - Don't hardcode 16 here. */
 		{
-			printf("Invalid selection!\n"); 
-			break;
 			while ((getchar()) != '\n');
 			continue;
 		}
