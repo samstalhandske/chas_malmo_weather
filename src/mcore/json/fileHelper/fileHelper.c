@@ -45,4 +45,13 @@ int Write_JSON_To_File(const char* fileName, cJSON* JSON_Object)
 
 }
 
-    
+int DoesFileExist(const char* fileName)
+{
+	FILE *file = fopen(fileName, "r");
+	if (file) {
+		fclose(file);
+		return 1;
+	} else {
+		return 0;
+	}
+}

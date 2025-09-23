@@ -4,6 +4,10 @@
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../data.h"
 #include "Get_Weather_Report.h"
+#include <string.h>
+#include <sys/stat.h>
+#include <time.h>
+
 
 #include "../mcore/http/http.h"
 
@@ -25,7 +29,9 @@ char* WMOInterpreter(int _WMOCode);
 
 Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude){
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
-
+    char* JsonString = malloc(strlen(_CityName + 6)); /* +4 for ".json" and +1 for null terminator */
+    sprintf(JsonString, "%s.json", _CityName);
+    
     snprintf(api_url, sizeof(api_url), "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
 
     printf("api_url: %s\n", api_url);
@@ -64,11 +70,39 @@ Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Lo
         Http_Dispose_Response(Response);
         /*free(Response);*/
         free(New_Weather_Report);
-    return NULL;
-}
-
+        return NULL;
+    }
+    
     
     cJSON* JsonRoot = cJSON_Parse(Response->data);
+
+    if(DoesFileExist(JsonString)) {
+        struct stat filinfo;
+
+        if (stat(JsonString, &filinfo) == -1) {
+            perror("stat");
+            return 1;
+        }
+    
+        
+        printf("Fil: %s\n", JsonString);
+        printf("Senast modifierad: %s", ctime(&filinfo.st_mtime));
+        time_t nu = time(NULL);
+        double skillnad = difftime(nu, filinfo.st_mtime);
+        
+        if(skillnad > 600){
+            Write_JSON_To_File(JsonString, JsonRoot); /* Cache latest weather to file */
+        }
+        else {
+            printf("CACHED DATA USED.\n");
+        }
+        printf("Det var %.0f sekunder sedan filen ändrades.\n", skillnad);
+
+        
+        
+    }
+    
+    
 
     if(JsonRoot == NULL)
     {
