@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../json.h"
 #include <assert.h>
 #include "fileHelper.h"
 
@@ -14,7 +13,8 @@ cJSON* Read_JSON_From_File(const char* fileName)
 	long length = ftell(file);
 	rewind(file);
 		
-	char* JsonString = calloc(1, length + 1);
+	char* JsonString = (char*)calloc(1, length + 1);
+
 	if (JsonString == NULL) {
 		fclose(file);
 		fprintf(stderr, "Memory allocation failed\n");
@@ -23,9 +23,12 @@ cJSON* Read_JSON_From_File(const char* fileName)
 	
 	fread(JsonString, 1, length, file);
 	JsonString[length] = '\0';
-	fclose(file);	
+	fclose(file);
 	
-	return cJSON_Parse(JsonString);
+	cJSON* jsonParse = cJSON_Parse(JsonString);
+	free(JsonString);
+	
+	return jsonParse;
 }
 	
 int Write_JSON_To_File(const char* fileName, cJSON* JSON_Object)
@@ -38,8 +41,10 @@ int Write_JSON_To_File(const char* fileName, cJSON* JSON_Object)
 		return -1;
 	}
 	
-	fprintf(f, "%s\n", cJSON_Print(JSON_Object));
+	char* jsonObjectString = cJSON_Print(JSON_Object);
+	fprintf(f, "%s\n", jsonObjectString);
 	fclose(f);
+	free(jsonObjectString);
 	
 	return 0;
 

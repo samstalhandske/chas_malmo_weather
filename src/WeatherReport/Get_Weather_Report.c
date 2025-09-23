@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+#include "../mcore/json/fileHelper/fileHelper.h"
 
 
 #include "../mcore/http/http.h"
@@ -31,8 +32,9 @@ Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Lon
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
     char* JsonString = malloc(strlen(_CityName) + 6); /* +4 for ".json" and +1 for null terminator */
     sprintf(JsonString, "%s.json", _CityName);
+
     
-    snprintf(api_url, sizeof(api_url), "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
+    sprintf(api_url, "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
 
     printf("api_url: %s\n", api_url);
 
@@ -65,7 +67,7 @@ Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Lon
         fprintf(stderr, "Http_Perform returned success but response is empty.\n");
         Http_Dispose_Response(&response);
         /*free(Response);*/
-        return NULL;
+        return New_Weather_Report; /* TODO: Change this */
     }
     
     
@@ -76,7 +78,7 @@ Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Lon
 
         if (stat(JsonString, &filinfo) == -1) {
             perror("stat");
-            return 1;
+            return New_Weather_Report; /* TODO: Change this */
         }
     
         
@@ -108,7 +110,7 @@ Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Lon
         {
             fprintf(stderr, "Error before: %s\n", error_ptr);
             cJSON_Delete(JsonRoot);
-            return NULL;
+            return New_Weather_Report; /* TODO: Change this */
         }
     }
 
@@ -128,9 +130,14 @@ Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Lon
     int Temperature = jsonTemp->valuedouble + 0.5;
     float WindSpeed = windspeed->valuedouble *1000/3600;
     /* int Time = atof(cJSON_Print(jsonTime)); */
-    long long TimeLong = StringTimeToLongLong(cJSON_Print(jsonTime));
-    
-    int WCode = atof(cJSON_Print(weathercode));
+
+    char* jsonTimeString = cJSON_Print(jsonTime);
+    long long TimeLong = StringTimeToLongLong(jsonTimeString);
+    free(jsonTimeString);
+
+    char* weatherCodeString = cJSON_Print(weathercode);
+    int WCode = atof(weatherCodeString);
+    free(weatherCodeString);
     char* WeatherVerbose = WMOInterpreter(WCode);
 
     New_Weather_Report.cityname = _CityName;
