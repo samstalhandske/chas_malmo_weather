@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "cJSON/cJSON.h"
-#include "../../../include/data.h"
+#include "../mcore/json/cJSON/cJSON.h"
+#include "../data.h"
 #include "Get_Weather_Report.h"
 
-#include "../http/http.h"
+#include "../mcore/http/http.h"
 
 /* ######################### Local functions ######################### */
 char* WMOInterpreter(int _WMOCode);
@@ -22,6 +22,7 @@ char* WMOInterpreter(int _WMOCode);
     int weathercode;        int 0-99 that has a corresponding text description, resolved in function WMOInterpreter(weathercode);
     char* description;      verbose weather description from OpenMeteo docs: https://open-meteo.com/en/docs#weather_variable_documentation
 */
+
 Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude){
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
 

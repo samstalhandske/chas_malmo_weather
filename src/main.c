@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <data.h>
+#include "data.h"
 #include <assert.h>
 #include "mcore/json/fileHelper/fileHelper.h"
 
 #include "mcore/http/http.h"
 #include "mcore/json/json.h"
-#include "mcore/json/Get_Weather_Report.h"
+#include "WeatherReport/Get_Weather_Report.h"
 
 int main() {
 	bool programShouldExit = false;
