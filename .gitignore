@@ -55,6 +55,8 @@ dkms.conf
 *.dwo
 .vscode/settings.json
 build/
+cachedcity/
+cachedreports/
 
 # other
 *.json
