@@ -10,19 +10,12 @@
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
+#include "../mcore/utils/CreateDirectory.h"
 
-#ifdef _WIN32
-#include <direct.h>  /* For _mkdir on Windows */
-#define MKDIR(path) _mkdir(path)
-#else
-#include <unistd.h>  /* For POSIX mkdir */
-#define MKDIR(path) mkdir(path, 0755)
-#endif
 
 /* LOCAL FUNCTIONS */
 
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString);
-int City_CreateCacheDirectoryIfMissing(const char* path);
 int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude);
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path);
 
@@ -48,7 +41,8 @@ const char* cities =    "Stockholm:59.3293:18.0686\n" "Göteborg:57.7089:11.9746
 int City_InitializeCitySystem(LinkedListCities* _LLC){
 
     memset(_LLC, 0, sizeof(LinkedListCities));
-    City_CreateCacheDirectoryIfMissing("cachedcity");
+    CreateDirectory("cachedcity");
+    CreateDirectory("cachedreports");
     
     int parseErrCode = City_ParseDefaultCityString(_LLC, cities);
     assert(parseErrCode == 0);
@@ -215,23 +209,6 @@ City* City_FindCity(LinkedListCities* _LLC, char* _Name) {
         current = current->next;
     }
     return NULL;
-}
-
-int City_CreateCacheDirectoryIfMissing(const char* path) {
-    struct stat st = {0};
-
-    if (stat(path, &st) == -1) {
-        if (MKDIR(path) == 0) {
-            printf("Directory created: %s\n", path);
-            return 0;
-        } else {
-            perror("mkdir failed");
-            return -1;
-        }
-    } else {
-        printf("Cached city data detected.\n");
-        return 1;
-    }
 }
 
 int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){

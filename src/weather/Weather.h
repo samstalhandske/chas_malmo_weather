@@ -20,7 +20,6 @@ typedef struct {
 
 WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
 
-long long StringTimeToLongLong(char* _stringTime);
-
+void Weather_DestroyReport(WeatherReport* report);
 
 #endif

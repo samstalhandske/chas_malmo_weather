@@ -16,14 +16,13 @@
 
 /* ######################### Local functions ######################### */
 cJSON* Weather_CheckCache(char* _FileName);
-int Weather_MakeHTTPCall(char* _Url, cJSON* _JsonRoot);
+int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRoot);
 int Weather_CreateReport(cJSON* _JsonRoot, WeatherReport* _NewWeatherReport, char* _CityName, double _Latitude, double _Longitude);
 char* WMOInterpreter(int _WMOCode);
 /* ######################### Local functions ######################### */
 
-/* (PR) Saknar City object i main.c ? blir inget namn på staden just nu (City* _City)*/
 /*
-    char* cityname;         TODO (PR) Name of city, f.ex Malmö, Stockholm not yet implemented 
+    char* cityname;         Name of city
     double latitude;        the variable speaks for itself 
     double longitude;       the variable speaks for itself
     long long timestamp;    the time obtained from OpenMeteo API: YYYYMMDDHHMM
@@ -109,7 +108,7 @@ void Weather_DestroyReport(WeatherReport* report) {
 cJSON* Weather_CheckCache(char* _FileName){
     
     if(DoesFileExist(_FileName)){
-        printf("Cached report found.\n");
+        /* printf("Cached report found.\n"); */
         struct stat fileInfo;
         if(stat(_FileName, &fileInfo) == -1){
             perror("error: stat if statement");
@@ -117,16 +116,16 @@ cJSON* Weather_CheckCache(char* _FileName){
         }
         else
         {
-            printf("FileName: %s\n", _FileName);
-            printf("Last modified: %s", ctime(&fileInfo.st_mtime));
+            /* printf("FileName: %s\n", _FileName); */
+            /* printf("Last modified: %s", ctime(&fileInfo.st_mtime)); */
             time_t timeNow = time(NULL);
             double timeDifference = difftime(timeNow, fileInfo.st_mtime);
             if( timeDifference > 900){
-                printf("Cached weather Json has expired (%.0lf seconds past expiration).\n", timeDifference-900);
+                printf("Weather report has expired (cached %.0lf seconds ago).\n", timeDifference);
                 return NULL;
             }else
             {
-                printf("Accessing cached weather Json (cached %.0lf seconds ago).\n", timeDifference);
+                printf("Accessing cached weather report (cached %.0lf seconds ago).\n", timeDifference);
                 
                 return Read_JSON_From_File(_FileName);
             }
@@ -136,7 +135,7 @@ cJSON* Weather_CheckCache(char* _FileName){
     return NULL;
 }
 
-int Weather_MakeHTTPCall(char* _Url, cJSON* _JsonRoot){
+int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRoot){
         Http myHttp;
         Http_Response* Response = calloc(1, sizeof(Http_Response));
 
@@ -163,7 +162,7 @@ int Weather_MakeHTTPCall(char* _Url, cJSON* _JsonRoot){
             return -1;
         }
 
-        _JsonRoot = cJSON_Parse(Response->data);
+        *(_JsonRoot) = cJSON_Parse(Response->data);
         /* clean up moved here */
         Http_Dispose_Response(Response);
         Http_Dispose(&myHttp);
