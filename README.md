@@ -1,31 +1,21 @@
-# chas_malmo_weather
+# Chas Academy Malmö Weatherclient
 
-# Väderklient
+This project is a work in progress weatherclient that is currently being written in **C90**
 
-C90/89
+## Prerequisites to build
 
-Greeting Message (Jonathan)
-Loopa programmets UI (ISA)
+*   **gcc**
+*   **libcurl**
+*   **make**
 
-
----- 
-Databas textsträng
-Bearbeta databassträng
-struct med city databassträng array med struct  (LUNDH)
-bygga URL baserat på databassträngen (LUNDH)
-Lista avilable cities (LUNDH)
----
-
-user input
-    val av stad i lista med siffra? (HENRIK)
-
-
-HTTP lib:
-använda CURL för att hämta JSON data i data blob (EMILIO PONTUS)
-
-
-
------------
-
-JSON parser JANSSON C-JSON
-
+## Building
+### Ubuntu
+1. `sudo apt install make gcc libcurl4-openssl-dev`
+2. `git clone https://github.com/samstalhandske/chas_malmo_weather.git`
+3. `cd chas_malmo_weather`
+4. `make`
+### Fedora
+1. `sudo dnf install make gcc libcurl-devel`
+2. `git clone https://github.com/samstalhandske/chas_malmo_weather.git`
+3. `cd chas_malmo_weather`
+4. `make`
