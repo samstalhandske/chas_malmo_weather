@@ -40,7 +40,7 @@ void buildDatabase()
             city->latitude = lat;
             city->longitude = lon;
             
-            snprintf(&city->URL[0], sizeof(city->URL),
+            sprintf(&city->URL[0],
                 "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true", lat, lon);
             count++;
         }
@@ -65,7 +65,7 @@ City* fetchCity(int selectedCityIndex) {
     if(selectedCityIndex < 0) {
         return NULL;
     }
-    if(selectedCityIndex >= sizeof(cityArray) / sizeof(cityArray[0])) {
+    if((size_t)selectedCityIndex >= sizeof(cityArray) / sizeof(cityArray[0])) {
         return NULL;
     }
 

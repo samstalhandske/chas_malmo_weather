@@ -19,7 +19,7 @@ typedef struct {
     char* description;
 } Weather_Report;
 
-Weather_Report* Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude);
+Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude);
 
 long long StringTimeToLongLong(char* _stringTime);
 
