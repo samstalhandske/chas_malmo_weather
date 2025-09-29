@@ -52,16 +52,9 @@ int main() {
 				continue;
 			}
 			
-			WeatherReport* CurrentWeather = Weather_GetReport(selectedCity->displayName, selectedCity->latitude, selectedCity->longitude);
-			assert(CurrentWeather != NULL);
-			
-			printf("\n\tCity:\t\t%s\n", CurrentWeather->cityname);
-			printf("\tTemperature:\t%i °C\n", CurrentWeather->temperature);
-			printf("\tWindspeed:\t%.2f m/s\n", CurrentWeather->windspeed);
-			printf("\tWind direction:\t%s\n", CurrentWeather->windDirectionVerbose);
-			printf("\tDescription:\t%s\n", CurrentWeather->description);
-			printf("\tTime:\t\t%lld\n\n", CurrentWeather->timestamp);
-			free(CurrentWeather);
+			WeatherReport CurrentWeather = Weather_GetReport(selectedCity->displayName, selectedCity->latitude, selectedCity->longitude);
+			Weather_Print(&CurrentWeather);			
+
 		}
 		free(userInput);
 	}

@@ -19,7 +19,9 @@ typedef struct {
     char* windDirectionVerbose;
 } WeatherReport;
 
-WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
+WeatherReport Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
+
+void Weather_Print(WeatherReport* report);
 
 void Weather_DestroyReport(WeatherReport* report);
 
