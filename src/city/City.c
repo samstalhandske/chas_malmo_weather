@@ -211,10 +211,10 @@ City* City_FindCity(LinkedListCities* _LLC, char* _Name) {
     return NULL;
 }
 
-int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){
-    size_t memoryNeeded = strlen(_Name) + strlen("cachedcity/") + strlen(".json") + 1;
+int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){    
+    size_t memoryNeeded = strlen(_Name) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcity/") + strlen(".json") + 1;
     char* jsonFilePath = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
-    sprintf(jsonFilePath, "cachedcity/%s.json", _Name);
+    sprintf(jsonFilePath, "cachedcity/%s%.7s%.7s.json", _Name, _Latitude, _Longitude);
 
     FILE* file = fopen(jsonFilePath, "w");
     if (file == NULL){
