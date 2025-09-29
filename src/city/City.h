@@ -18,12 +18,22 @@ struct LinkedListCities {
     City* tail;
 };
 
+
+typedef struct
+{
+    char* displayName;
+    double latitude;
+    double longitude;
+} City_Info;
+
 int City_InitializeCitySystem(LinkedListCities* _LLC);
 
 int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double _Latitude, double _Longitude, City** _CityPtr);
 int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City);
 void City_DisplayLinkedListCities(LinkedListCities* _LLC);
 City* City_FindCity(LinkedListCities* _LLC, char* _Name);
+
+int City_EditCity(LinkedListCities* _LLC, City* _City, City_Info* _CityInfo);
 
 void City_DestroyLinkedListCities(LinkedListCities* _LLC);
 

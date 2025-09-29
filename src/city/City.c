@@ -12,6 +12,8 @@
 #include "../mcore/utils/strdup.h"
 #include "../mcore/utils/CreateDirectory.h"
 
+#include "../mcore/json/fileHelper/fileHelper.h"
+
 
 /* LOCAL FUNCTIONS */
 
@@ -328,6 +330,88 @@ void City_DestroyLinkedListCities(LinkedListCities* _LLC) {
     /* printf("Total freed cities: %i\n", i); */
     _LLC->head = NULL;
     _LLC->tail = NULL;
+}
+
+/* Edits a City's values and saves it */
+int City_EditCity(LinkedListCities* _LLC, City* _City, City_Info* _CityInfo)
+{
+    if (_LLC == NULL)
+    {
+        printf("LinkedListCities is NULL!\n");
+        return -1;
+    }
+
+    City* city = City_FindCity(_LLC, _City->displayName);
+
+    if (city == NULL)
+    {
+        printf("City to edit does could not be found!\n");
+        return -1;
+    }
+
+    size_t memoryNeeded = strlen(_CityInfo->displayName) + sizeof(_CityInfo->latitude) + sizeof(_CityInfo->longitude) + strlen("cachedreports/") + strlen(".json") + 1;
+    char* fileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+    sprintf(fileName, "cachedreports/%s%.4f%.4f.json", _CityInfo->displayName, _CityInfo->latitude, _CityInfo->longitude);
+    /* sizeof(_Latitude) + sizeof(_Longitude) */
+    /*
+    printf("Filename: %s\n", fileName);
+    */
+
+    if (DoesFileExist(fileName) == 1)
+    {
+        cJSON* fileRead = Read_JSON_From_File(fileName);
+        char* t = cJSON_Print(fileRead);
+
+        printf("%s\n", t);
+        free(t);
+
+        /* Longitude and Latitude will always be max 10 characters */
+
+        char latitudeBuffer[10];
+        sprintf(latitudeBuffer, "%f", _CityInfo->latitude);
+
+        char longitudeBuffer[10];
+        sprintf(longitudeBuffer, "%f", _CityInfo->longitude);
+
+
+        if (_CityInfo->displayName != NULL)
+        {
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "displayName", cJSON_CreateString(_CityInfo->displayName));
+        }
+        if (_CityInfo->latitude != (double)0)
+        {
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "latitude", cJSON_CreateString(latitudeBuffer));
+        }
+        if (_CityInfo->longitude != (double)0)
+        {
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "longitude", cJSON_CreateString(longitudeBuffer));
+        }
+        /*
+            char* yo = cJSON_Print(fileRead);
+        
+            printf("%s\n", yo);
+            free(yo);
+        */
+
+        int result = Write_JSON_To_File(fileName, fileRead);
+
+        free(fileName);
+
+        if (result == -1)
+        {
+            printf("Failed to write to %s json file", fileName);
+            return -1;
+        }
+    }
+    else
+    {
+        printf("City file to edit could not be found!\n");
+        return -1;
+    }
+    
+
+
+    return 0;
 }
 
 
