@@ -25,17 +25,6 @@ int main() {
 	
 	printf("<==============# Welcome to the Weather App! #==============>\n");
 	
-	/*
-	buildDatabase();
-	
-	cJSON* my_JSON_Object = Read_JSON_From_File("file.json");
-	if(my_JSON_Object == NULL){
-		my_JSON_Object = cJSON_CreateObject();
-		}
-		printf("%s\n", cJSON_Print(my_JSON_Object));
-		Write_JSON_To_File("file.json", my_JSON_Object);	
-		*/
-	
 	while (programShouldExit == false) {
 		City_DisplayLinkedListCities(&LLC);
 
@@ -47,7 +36,7 @@ int main() {
 		if (strcmp(userInput, "Exit") == 0 || strcmp(userInput, "Quit") == 0 || strcmp(userInput, "Q") == 0){
 			programShouldExit = true;
 		}
-		else if (strcmp(userInput, "Options") == 0){
+		else if (strcmp(userInput, "Options") == 0 || strcmp(userInput, "0") == 0){
 			UserSelectOptions(&LLC);
 			continue;
 		}

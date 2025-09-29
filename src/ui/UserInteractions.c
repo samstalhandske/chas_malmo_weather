@@ -9,6 +9,7 @@
 #include "../mcore/utils/strdup.h"
 #include "../city/City.h"
 #include "../mcore/utils/dtos.h"
+#include "../mcore/json/fileHelper/fileHelper.h"
 
 
 char* UserSelectCityChar(){
@@ -37,6 +38,7 @@ void UserSelectOptions(LinkedListCities* _LLC){
             return;
         }
         case 2: {printf("City_RemoveCityClientUI\n");
+            UserInteractionRemoveCity(_LLC);
             return;
         }
         case 3: {
@@ -88,7 +90,7 @@ void UserSelectOptions(LinkedListCities* _LLC){
     return;
 }
 
-int UserInteractionAddCity(LinkedListCities* _LLCPtr){
+int UserInteractionAddCity(LinkedListCities* _LLC){
 
     double lat;
     double lon;
@@ -105,13 +107,13 @@ int UserInteractionAddCity(LinkedListCities* _LLCPtr){
     scanf("%le", &lon);
     while((c = getchar()) != '\n' && c != EOF);
 
-    City* OldCity = City_FindCity(_LLCPtr, newCityName);
+    City* OldCity = City_FindCity(_LLC, newCityName);
     if(OldCity != NULL){
         printf("New city name \"%s\" already exists!\n", newCityName);
         return 1;
     }else
     {   
-        int addCityErrCode =  City_AddCityToLinkedList(_LLCPtr, newCityName, lat, lon, NULL);
+        int addCityErrCode =  City_AddCityToLinkedList(_LLC, newCityName, lat, lon, NULL);
         if (addCityErrCode != 0){
             return -1;
         }
@@ -124,6 +126,25 @@ int UserInteractionAddCity(LinkedListCities* _LLCPtr){
     free(strLat);
     free(strLon);
 
+    return 0;
+}
+
+int UserInteractionRemoveCity(LinkedListCities* _LLC){
+    
+    printf("Enter city to remove: \n");
+    char* removeName = UserSelectCityChar();
+
+    City* selectedCity = City_FindCity(_LLC, removeName);
+    if(selectedCity == NULL){
+        printf("City \"%s\" not found.\n", removeName);
+        return 1;
+    }
+    else
+    {
+        City_RemoveCityFromLinkedList(_LLC, selectedCity);
+    }
+
+    
     return 0;
 }
 

@@ -12,5 +12,7 @@ void UserSelectOptions(LinkedListCities* _LLC);
 
 int UserInteractionAddCity(LinkedListCities* _LLCPtr);
 
+int UserInteractionRemoveCity(LinkedListCities* _LLC);
+
 
 #endif
