@@ -12,11 +12,16 @@
 #include "mcore/json/fileHelper/fileHelper.h"
 
 int main() {
-	bool programShouldExit = false;
-
+	bool programShouldExit;
 	LinkedListCities LLC;
 	
-	City_InitializeCitySystem(&LLC);
+	if(City_InitializeCitySystem(&LLC) == 0){
+		programShouldExit = false;
+		
+	}else{
+		printf("City_Initialize failed");
+		programShouldExit = true;
+	}
 	
 	printf("<==============# Welcome to the Weather App! #==============>\n");
 	
@@ -53,7 +58,7 @@ int main() {
 			printf("\n\tCity:\t\t%s\n", CurrentWeather->cityname);
 			printf("\tTemperature:\t%i °C\n", CurrentWeather->temperature);
 			printf("\tWindspeed:\t%.2f m/s\n", CurrentWeather->windspeed);
-			printf("\tWeathercode:\t%i\n", CurrentWeather->weathercode);
+			printf("\tWind direction:\t%s\n", CurrentWeather->windDirectionVerbose);
 			printf("\tDescription:\t%s\n", CurrentWeather->description);
 			printf("\tTime:\t\t%lld\n\n", CurrentWeather->timestamp);
 			free(CurrentWeather);

@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include "strdup.h"
 
+
 #ifdef _WIN32
 #include <direct.h>  /* For _mkdir on Windows */
 #define MKDIR(path) _mkdir(path)
@@ -13,9 +14,14 @@
 #endif
 
 
+/* creates directory in working directory, 
+    usage: 
+        CreateDirectory(MyNewDirectory) :: to create a single directory
+        CreateDirectory(Dir1/Dir2/Dir3) :: becomes a directory tree
+*/
 int CreateDirectory(const char* _Path) {
     struct stat st = {0};
-    char* pathCopy = strdupWSL(_Path);
+    char* pathCopy = strdup(_Path);
 
     if (pathCopy == NULL) {
         printf("Failed to allocate memory for path copy.\n");

@@ -15,7 +15,7 @@ char* UserSelectCityChar(){
     printf("Select a city: ");
     fgets(buffer, sizeof(buffer), stdin);
     buffer[strcspn(buffer, "\n")] = '\0';
-    char* returnString = strdupWSL(buffer);
+    char* returnString = strdup(buffer);
     CaseFormatSwedish(returnString);
 
     return returnString;

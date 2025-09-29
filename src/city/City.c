@@ -56,7 +56,7 @@ int City_InitializeCitySystem(LinkedListCities* _LLC){
 /* Parse cities from hard coded string */
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString){
     printf("Started parsing city list.\n");
-    char* DataCopy = strdupWSL(_BootstrapString);
+    char* DataCopy = strdup(_BootstrapString);
 
     if(DataCopy == NULL){
         printf("Failed to allocate memory for list.\n");
@@ -126,7 +126,7 @@ int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double 
         return CITY_ADDTOLINKEDLIST_FAIL;
     }
 
-    NewCity->displayName = strdupWSL(_DisplayName);
+    NewCity->displayName = strdup(_DisplayName);
     NewCity->latitude = _Latitude;
     NewCity->longitude = _Longitude;
 
@@ -288,11 +288,11 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         cJSON* jsonRoot = cJSON_Parse(JsonString);
         free(JsonString);
 
-        char* displayName = strdupWSL(cJSON_GetObjectItem(jsonRoot, "displayName")->valuestring);
-        char* latStr = strdupWSL(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
+        char* displayName = strdup(cJSON_GetObjectItem(jsonRoot, "displayName")->valuestring);
+        char* latStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
         double latitude =  atof(latStr);
         free(latStr);
-        char* lonStr = strdupWSL(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
+        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
         double longitude = atof(lonStr);
         free(lonStr);
         

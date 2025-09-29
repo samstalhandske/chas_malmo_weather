@@ -1,2 +1,2 @@
 
-char* strdupWSL(const char* str);
+char* strdup(const char* str);

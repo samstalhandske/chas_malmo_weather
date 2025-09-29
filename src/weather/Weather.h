@@ -16,6 +16,7 @@ typedef struct {
     int temperature;
     int weathercode;
     char* description;
+    char* windDirectionVerbose;
 } WeatherReport;
 
 WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);

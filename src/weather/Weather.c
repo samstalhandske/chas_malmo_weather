@@ -16,8 +16,9 @@
 
 /* ######################### Local functions ######################### */
 cJSON* Weather_CheckCache(char* _FileName);
-int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRoot);
+int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRootPtr);
 int Weather_CreateReport(cJSON* _JsonRoot, WeatherReport* _NewWeatherReport, char* _CityName, double _Latitude, double _Longitude);
+char* Weather_WindDirectionInterpreter(int _WindDirection);
 char* WMOInterpreter(int _WMOCode);
 /* ######################### Local functions ######################### */
 
@@ -33,7 +34,7 @@ char* WMOInterpreter(int _WMOCode);
 */
 
 WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude){
-    char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true"; */
+    char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true&timezone=Europe/Stockholm"; */
     /* bool CallHTTP = false;*/ 
     cJSON* JsonRoot;
     
@@ -42,9 +43,9 @@ WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Long
     char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
     sprintf(JsonFileName, "cachedreports/%s.json", _CityName);
     
-    sprintf(api_url, "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true", _Latitude, _Longitude);
+    sprintf(api_url, "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true&timezone=Europe/Stockholm", _Latitude, _Longitude);
     
-    /* printf("api_url: %s\n", api_url); */
+    printf("api_url: %s\n", api_url);
     
     /* placeholder new weatherreport */
     WeatherReport* NewWeatherReport = malloc(sizeof(WeatherReport));
@@ -57,6 +58,12 @@ WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Long
     JsonRoot = Weather_CheckCache(JsonFileName);
     /* Otherwise contact open-meteo API */
     if(JsonRoot == NULL){
+        Weather_MakeHTTPCall(api_url, &JsonRoot);
+
+        /* store downloaded data in cache */
+        int wjtfErrCode = Write_JSON_To_File(JsonFileName, JsonRoot);
+        assert(wjtfErrCode == 0);
+        /*
         printf("Calling weather service...\n");
         Http myHttp;
         Http_Response* Response = calloc(1, sizeof(Http_Response));
@@ -87,6 +94,7 @@ WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Long
         Http_Dispose_Response(Response);
         Http_Dispose(&myHttp);
         free(Response);
+        */
     }
 
     /* populate newWeatherReport */
@@ -135,7 +143,7 @@ cJSON* Weather_CheckCache(char* _FileName){
     return NULL;
 }
 
-int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRoot){
+int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRootPtr){
         Http myHttp;
         Http_Response* Response = calloc(1, sizeof(Http_Response));
 
@@ -162,7 +170,7 @@ int Weather_MakeHTTPCall(char* _Url, cJSON** _JsonRoot){
             return -1;
         }
 
-        *(_JsonRoot) = cJSON_Parse(Response->data);
+        *(_JsonRootPtr) = cJSON_Parse(Response->data);
         /* clean up moved here */
         Http_Dispose_Response(Response);
         Http_Dispose(&myHttp);
@@ -182,15 +190,18 @@ int Weather_CreateReport(cJSON* _JsonRoot, WeatherReport* _NewWeatherReport, cha
             return -1;
         }
     }
-    cJSON* CurrentWeatherBlob = cJSON_GetObjectItemCaseSensitive(_JsonRoot, "current_weather"); 
-    cJSON* jsonTime = cJSON_GetObjectItem(CurrentWeatherBlob, "time");
-    cJSON* windspeed = cJSON_GetObjectItem(CurrentWeatherBlob, "windspeed");
-    cJSON* jsonTemp = cJSON_GetObjectItem(CurrentWeatherBlob, "temperature");
-    cJSON* weathercode = cJSON_GetObjectItem(CurrentWeatherBlob, "weathercode");
+
+    /* printf("%s", cJSON_Print(_JsonRoot)); */
+
+    cJSON* currentWeatherBlob = cJSON_GetObjectItemCaseSensitive(_JsonRoot, "current_weather"); 
+    cJSON* jsonTime = cJSON_GetObjectItem(currentWeatherBlob, "time");
+    cJSON* jsonWindSpeed = cJSON_GetObjectItem(currentWeatherBlob, "windspeed");
+    cJSON* jsonTemperature = cJSON_GetObjectItem(currentWeatherBlob, "temperature");
+    cJSON* jsonWeatherCode = cJSON_GetObjectItem(currentWeatherBlob, "weathercode");
+    cJSON* jsonWindDirection = cJSON_GetObjectItem(currentWeatherBlob, "winddirection");
 
 /* // additional data
     cJSON *interval = cJSON_GetObjectItem(CurrentWeatherBlob, "interval");
-    cJSON *winddirection = cJSON_GetObjectItem(CurrentWeatherBlob, "winddirection");
     cJSON *is_day = cJSON_GetObjectItem(CurrentWeatherBlob, "is_day");
 */
     /* printf("%s", cJSON_Print(jsonTime)); */
@@ -199,21 +210,53 @@ int Weather_CreateReport(cJSON* _JsonRoot, WeatherReport* _NewWeatherReport, cha
     long long TimeLong = StringTimeToLongLong(timeStr);
     free(timeStr);
     /* long long TimeLong = StringTimeToLongLong(cJSON_Print(jsonTime)); */
-    float WindSpeed = windspeed->valuedouble *1000/3600;
-    int Temperature = jsonTemp->valuedouble + 0.5;
-    int WCode = weathercode->valueint;
-    char* WeatherVerbose = WMOInterpreter(WCode);
+    float windSpeed = jsonWindSpeed->valuedouble *1000/3600;
+    int windDirection = jsonWindDirection->valueint;
+    int temperature = jsonTemperature->valuedouble + 0.5;
+    int weatherCode = jsonWeatherCode->valueint;
+    char* weatherVerbose = WMOInterpreter(weatherCode);
+    char* windDirectionVerbose = Weather_WindDirectionInterpreter(windDirection);
 
     _NewWeatherReport->cityname = _CityName;
     _NewWeatherReport->latitude = _Latitude;
     _NewWeatherReport->longitude = _Longitude;
     _NewWeatherReport->timestamp = TimeLong;
-    _NewWeatherReport->windspeed = WindSpeed;
-    _NewWeatherReport->temperature = Temperature;
-    _NewWeatherReport->weathercode = WCode;
-    _NewWeatherReport->description = WeatherVerbose;
+    _NewWeatherReport->windspeed = windSpeed;
+    _NewWeatherReport->temperature = temperature;
+    _NewWeatherReport->weathercode = weatherCode;
+    _NewWeatherReport->description = weatherVerbose;
+    _NewWeatherReport->windDirectionVerbose = windDirectionVerbose;
 
     return 0;
+}
+
+char* Weather_WindDirectionInterpreter(int _WindDirection){
+
+    if(_WindDirection < 20 || _WindDirection >= 340){
+        return "North";
+    }
+        if(_WindDirection >= 20 && _WindDirection < 70){
+        return "North-East";
+    }
+        if(_WindDirection >= 70 && _WindDirection < 110){
+        return "East";
+    }
+        if(_WindDirection >= 110 && _WindDirection < 160){
+        return "South-East";
+    }
+        if(_WindDirection >= 160 && _WindDirection < 200){
+        return "South";
+    }
+        if(_WindDirection >= 200 && _WindDirection < 250){
+        return "South-West";
+    }
+        if(_WindDirection >= 250 && _WindDirection < 290){
+        return "West";
+    }
+        if(_WindDirection >= 290 && _WindDirection < 340){
+        return "North-West";
+    }
+    return "Unable to determine wind direction";
 }
 
 char* WMOInterpreter(int _WMOCode){
