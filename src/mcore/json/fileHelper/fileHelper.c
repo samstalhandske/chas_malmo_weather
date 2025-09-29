@@ -92,3 +92,13 @@ char* Read_JSON_From_File_Return_char(const char* fileName)
     /* free(JsonString); */  /* ✅ Free after parsing */
     return JsonString;
 }
+
+int DeleteFile(const char* fileName)
+{
+    if (remove(fileName) == 0) {
+        return 0;
+    } else {
+        perror("Fel vid borttagning av fil");
+        return -1; 
+    }
+}
