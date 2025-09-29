@@ -1,5 +1,5 @@
-#ifndef GET_CURRENT_WEATHER_H
-#define GET_CURRENT_WEATHER_H
+#ifndef WEATHER_H
+#define WEATHER_H
 
 #include <stdio.h>
 #include <assert.h>
@@ -19,7 +19,9 @@ typedef struct {
     char* windDirectionVerbose;
 } WeatherReport;
 
-WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
+WeatherReport Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
+
+void Weather_Print(WeatherReport* report);
 
 void Weather_DestroyReport(WeatherReport* report);
 

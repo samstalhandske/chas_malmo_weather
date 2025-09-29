@@ -33,7 +33,7 @@ char* WMOInterpreter(int _WMOCode);
     char* description;      verbose weather description from OpenMeteo docs: https://open-meteo.com/en/docs#weather_variable_documentation
 */
 
-WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude){
+WeatherReport Weather_GetReport(char* _CityName, double _Latitude, double _Longitude){
     char api_url[256]; /* "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true&timezone=Europe/Stockholm"; */
     /* bool CallHTTP = false;*/ 
     cJSON* JsonRoot;
@@ -48,11 +48,7 @@ WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Long
     printf("api_url: %s\n", api_url);
     
     /* placeholder new weatherreport */
-    WeatherReport* NewWeatherReport = malloc(sizeof(WeatherReport));
-    if (NewWeatherReport == NULL) {
-        fprintf(stderr, "Failed to allocate memory for Weather_Report.\n");
-        return NULL;
-    }
+    WeatherReport NewWeatherReport = {0};
 
     /* Check if weatherdata already has been downloaded in cache*/
     JsonRoot = Weather_CheckCache(JsonFileName);
@@ -98,7 +94,7 @@ WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Long
     }
 
     /* populate newWeatherReport */
-    Weather_CreateReport(JsonRoot, NewWeatherReport, _CityName, _Latitude, _Longitude);
+    Weather_CreateReport(JsonRoot, &NewWeatherReport, _CityName, _Latitude, _Longitude);
 
     /* Cleanup*/
     cJSON_Delete(JsonRoot);
@@ -111,6 +107,16 @@ void Weather_DestroyReport(WeatherReport* report) {
     free(report->cityname);      /* if strdup'd */
     free(report->description);   /* if strdup'd */
     free(report);
+}
+
+void Weather_Print(WeatherReport* report)
+{
+    printf("\n\tCity:\t\t%s\n", report->cityname);
+	printf("\tTemperature:\t%i °C\n", report->temperature);
+	printf("\tWindspeed:\t%.2f m/s\n", report->windspeed);
+	printf("\tWind direction:\t%s\n", report->windDirectionVerbose);
+	printf("\tDescription:\t%s\n", report->description);
+	printf("\tTime:\t\t%lld\n\n", report->timestamp);
 }
 
 cJSON* Weather_CheckCache(char* _FileName){
