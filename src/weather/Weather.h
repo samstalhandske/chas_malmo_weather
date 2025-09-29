@@ -3,10 +3,9 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include "mcore/json/cJSON/cJSON.h"
-#include "city.h"
-
-#include "mcore/http/http.h"
+#include "../mcore/json/cJSON/cJSON.h"
+#include "../city/City.h"
+#include "../mcore/http/http.h"
 
 typedef struct {
     char* cityname; 
@@ -17,11 +16,11 @@ typedef struct {
     int temperature;
     int weathercode;
     char* description;
-} Weather_Report;
+    char* windDirectionVerbose;
+} WeatherReport;
 
-Weather_Report Get_Weather_Report(char* _CityName, double _Latitude, double _Longitude);
+WeatherReport* Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
 
-long long StringTimeToLongLong(char* _stringTime);
-
+void Weather_DestroyReport(WeatherReport* report);
 
 #endif
