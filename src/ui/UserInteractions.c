@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include "ui/UserInteractions.h"
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../city/City.h"
+#include "../mcore/utils/dtos.h"
 
 
 char* UserSelectCityChar(){
@@ -31,6 +33,7 @@ void UserSelectOptions(LinkedListCities* _LLC){
 
     switch(iOption) {
         case 1: {printf("City_AddCityClientUI\n");
+            int errCode = UserInteractionAddCity(_LLC);
             return;
         }
         case 2: {printf("City_RemoveCityClientUI\n");
@@ -85,6 +88,44 @@ void UserSelectOptions(LinkedListCities* _LLC){
     return;
 }
 
+int UserInteractionAddCity(LinkedListCities* _LLCPtr){
+
+    double lat;
+    double lon;
+    int c;
+
+    printf("Enter new City name: ");
+    char* newCityName = UserSelectCityChar();
+
+    printf("Enter latitude: ");
+    scanf("%le", &lat);
+    while((c = getchar()) != '\n' && c != EOF);
+
+    printf("Enter longitude: ");
+    scanf("%le", &lon);
+    while((c = getchar()) != '\n' && c != EOF);
+
+    City* OldCity = City_FindCity(_LLCPtr, newCityName);
+    if(OldCity != NULL){
+        printf("New city name \"%s\" already exists!\n", newCityName);
+        return 1;
+    }else
+    {   
+        int addCityErrCode =  City_AddCityToLinkedList(_LLCPtr, newCityName, lat, lon, NULL);
+        if (addCityErrCode != 0){
+            return -1;
+        }
+    }
+    char* strLat = doubleToString(lat);
+    char* strLon = doubleToString(lon);
+
+    City_SaveToJsonFile(newCityName, strLat, strLon);
+
+    free(strLat);
+    free(strLon);
+
+    return 0;
+}
 
 int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity){
     

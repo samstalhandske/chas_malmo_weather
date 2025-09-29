@@ -1,0 +1,2 @@
+
+char* doubleToString(double value);

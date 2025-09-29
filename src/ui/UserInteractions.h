@@ -10,5 +10,7 @@ char* UserSelectCityChar();
 
 void UserSelectOptions(LinkedListCities* _LLC);
 
+int UserInteractionAddCity(LinkedListCities* _LLCPtr);
+
 
 #endif

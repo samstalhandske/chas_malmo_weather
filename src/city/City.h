@@ -37,6 +37,8 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
 
 void City_DestroyLinkedListCities(LinkedListCities* _LLC);
 
+int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude);
+
 /*
 void buildDatabase();
 void listCities();

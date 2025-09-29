@@ -20,7 +20,7 @@
 /* LOCAL FUNCTIONS */
 
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString);
-int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude);
+
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path);
 
 /* LOCAL FUNCTIONS */
