@@ -1,5 +1,5 @@
-#ifndef GET_CURRENT_WEATHER_H
-#define GET_CURRENT_WEATHER_H
+#ifndef WEATHER_H
+#define WEATHER_H
 
 #include <stdio.h>
 #include <assert.h>

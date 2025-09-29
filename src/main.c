@@ -45,6 +45,10 @@ int main() {
 		if (strcmp(userInput, "Exit") == 0 || strcmp(userInput, "Quit") == 0 || strcmp(userInput, "Q") == 0){
 			programShouldExit = true;
 		}
+		else if (strcmp(userInput, "Options") == 0){
+			UserSelectOptions();
+			continue;
+		}
 		else{
 			City* selectedCity = City_FindCity(&LLC, userInput);
 			if(selectedCity == NULL){

@@ -39,9 +39,9 @@ WeatherReport Weather_GetReport(char* _CityName, double _Latitude, double _Longi
     cJSON* JsonRoot;
     
     /* determine json file name */
-    size_t memoryNeeded = strlen(_CityName) + strlen("cachedreports/") + strlen(".json") + 1;
+    size_t memoryNeeded = strlen(_CityName) + sizeof(_Latitude) + sizeof(_Longitude) + strlen("cachedreports/") + strlen(".json") + 1;
     char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
-    sprintf(JsonFileName, "cachedreports/%s.json", _CityName);
+    sprintf(JsonFileName, "cachedreports/%s%.4f%.4f.json", _CityName, _Latitude, _Longitude);
     
     sprintf(api_url, "https://api.open-meteo.com/v1/forecast?latitude=%.4lf&longitude=%.4lf&current_weather=true&timezone=Europe/Stockholm", _Latitude, _Longitude);
     

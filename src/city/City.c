@@ -11,6 +11,7 @@
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../mcore/utils/CreateDirectory.h"
+#include "../mcore/json/fileHelper/fileHelper.h"
 
 #include "../mcore/json/fileHelper/fileHelper.h"
 
@@ -174,7 +175,13 @@ int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City)
         _City->prev->next = _City->next;
         _City->next->prev = _City->prev;
     }
+    size_t memoryNeeded = strlen(_City->displayName) + sizeof(_City->latitude) + sizeof(_City->longitude) + strlen("cachedreports/") + strlen(".json") + 1;
+    char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+    sprintf(JsonFileName, "cachedcity/%s%.4f%.4f.json", _City->displayName, _City->latitude, _City->longitude);
+    DeleteFile(JsonFileName); 
+    free(JsonFileName);
     free(_City);
+
     return 0;
 }
 
@@ -213,10 +220,10 @@ City* City_FindCity(LinkedListCities* _LLC, char* _Name) {
     return NULL;
 }
 
-int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){
-    size_t memoryNeeded = strlen(_Name) + strlen("cachedcity/") + strlen(".json") + 1;
+int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){    
+    size_t memoryNeeded = strlen(_Name) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcity/") + strlen(".json") + 1;
     char* jsonFilePath = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
-    sprintf(jsonFilePath, "cachedcity/%s.json", _Name);
+    sprintf(jsonFilePath, "cachedcity/%s%.7s%.7s.json", _Name, _Latitude, _Longitude);
 
     FILE* file = fopen(jsonFilePath, "w");
     if (file == NULL){
@@ -294,7 +301,7 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         char* latStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
         double latitude =  atof(latStr);
         free(latStr);
-        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
+        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "longitude")->valuestring);
         double longitude = atof(lonStr);
         free(lonStr);
         
