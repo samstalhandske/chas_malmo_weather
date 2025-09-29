@@ -12,7 +12,6 @@
 char* UserSelectCityChar(){
 /* Get user input and format with FormatUserInput */
     char buffer[100];
-    printf("\nOptions for options, Exit (Quit or Q) to exit.\nSelect a city: ");
     fgets(buffer, sizeof(buffer), stdin);
     buffer[strcspn(buffer, "\n")] = '\0';
     char* returnString = strdup(buffer);
@@ -21,7 +20,7 @@ char* UserSelectCityChar(){
     return returnString;
 }
 
-void UserSelectOptions(){
+void UserSelectOptions(LinkedListCities* _LLC){
 
     int iOption;
     int c;
@@ -37,7 +36,45 @@ void UserSelectOptions(){
         case 2: {printf("City_RemoveCityClientUI\n");
             return;
         }
-        case 3: {printf("City_EditCityClientUI\n");
+        case 3: {
+            printf("1. Edit name\n2. Edit latitude\n3. Edit longitude\n");
+
+            while(1)
+            {
+                int editOption;
+                scanf("%d", &editOption);
+                while((c = getchar()) != '\n' && c != EOF);
+
+
+                printf("Set the value: ");
+                char* getValue = UserSelectCityChar();
+
+
+                printf("\nEnter your city: ");
+                char* cityToEdit = UserSelectCityChar();
+
+                switch (editOption)
+                {
+                    case 1:
+                        City_EditCity(_LLC, cityToEdit, getValue, NULL, NULL);
+                        break;
+                    case 2:
+                        City_EditCity(_LLC, cityToEdit, NULL, getValue, NULL);
+                        break;
+                    case 3:
+                        City_EditCity(_LLC, cityToEdit, NULL, NULL, getValue);
+                        break;
+                        
+                    default:
+                        printf("Not a valid edit option!\n");
+                        continue;
+                }
+
+
+
+                break;
+            }
+
             return;
         }
         case 4: {printf("return to main\n");

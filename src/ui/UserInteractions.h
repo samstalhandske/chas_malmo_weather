@@ -8,7 +8,7 @@ int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity);
 
 char* UserSelectCityChar();
 
-void UserSelectOptions();
+void UserSelectOptions(LinkedListCities* _LLC);
 
 
 #endif

@@ -31,9 +31,9 @@ int City_InitializeCitySystem(LinkedListCities* _LLC);
 int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double _Latitude, double _Longitude, City** _CityPtr);
 int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City);
 void City_DisplayLinkedListCities(LinkedListCities* _LLC);
-City* City_FindCity(LinkedListCities* _LLC, char* _Name);
+City* City_FindCity(LinkedListCities* _LLC, const char* _Name);
 
-int City_EditCity(LinkedListCities* _LLC, City* _City, City_Info* _CityInfo);
+int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _NewName, const char* _Latitude, const char* _Longitude);
 
 void City_DestroyLinkedListCities(LinkedListCities* _LLC);
 

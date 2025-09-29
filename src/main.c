@@ -39,6 +39,8 @@ int main() {
 	while (programShouldExit == false) {
 		City_DisplayLinkedListCities(&LLC);
 
+
+	    printf("\nOptions for options, Exit (Quit or Q) to exit.\nSelect a city: ");
 		char* userInput = UserSelectCityChar();
 		printf("Recorded input: %s\n", userInput);
 
@@ -46,7 +48,7 @@ int main() {
 			programShouldExit = true;
 		}
 		else if (strcmp(userInput, "Options") == 0){
-			UserSelectOptions();
+			UserSelectOptions(&LLC);
 			continue;
 		}
 		else{
