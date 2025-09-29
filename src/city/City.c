@@ -11,6 +11,7 @@
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../mcore/utils/CreateDirectory.h"
+#include "../mcore/json/fileHelper/fileHelper.h"
 
 
 /* LOCAL FUNCTIONS */
@@ -172,7 +173,13 @@ int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City)
         _City->prev->next = _City->next;
         _City->next->prev = _City->prev;
     }
+    size_t memoryNeeded = strlen(_City->displayName) + sizeof(_City->latitude) + sizeof(_City->longitude) + strlen("cachedreports/") + strlen(".json") + 1;
+    char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+    sprintf(JsonFileName, "cachedcity/%s%.4f%.4f.json", _City->displayName, _City->latitude, _City->longitude);
+    DeleteFile(JsonFileName); 
+    free(JsonFileName);
     free(_City);
+
     return 0;
 }
 
