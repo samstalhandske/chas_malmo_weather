@@ -12,7 +12,7 @@
 char* UserSelectCityChar(){
 /* Get user input and format with FormatUserInput */
     char buffer[100];
-    printf("Select a city: ");
+    printf("\nOptions for options, Exit (Quit or Q) to exit.\nSelect a city: ");
     fgets(buffer, sizeof(buffer), stdin);
     buffer[strcspn(buffer, "\n")] = '\0';
     char* returnString = strdup(buffer);
@@ -20,6 +20,34 @@ char* UserSelectCityChar(){
 
     return returnString;
 }
+
+void UserSelectOptions(){
+
+    int iOption;
+    int c;
+    printf("\n\t1. Add City\n\t2. Remove City\n\t3. Edit city\n\t4. Back\n\nMake your choice: ");
+    scanf("%d", &iOption);
+    while((c = getchar()) != '\n' && c != EOF);
+    printf("Your selected option: %i\n", iOption);
+
+    switch(iOption) {
+        case 1: {printf("City_AddCityClientUI\n");
+            return;
+        }
+        case 2: {printf("City_RemoveCityClientUI\n");
+            return;
+        }
+        case 3: {printf("City_EditCityClientUI\n");
+            return;
+        }
+        case 4: {printf("return to main\n");
+            return;
+        }
+        default: printf("No valid option selected\n");
+    }
+    return;
+}
+
 
 int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity){
     
