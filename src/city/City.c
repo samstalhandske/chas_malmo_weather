@@ -402,13 +402,15 @@ int City_EditCity(LinkedListCities* _LLC, City* _City, City_Info* _CityInfo)
 
         int result = Write_JSON_To_File(fileName, fileRead);
 
-        free(fileName);
 
         if (result == -1)
         {
             printf("Failed to write to %s json file", fileName);
+            free(fileName);
             return -1;
         }
+
+        free(fileName);
     }
     else
     {
