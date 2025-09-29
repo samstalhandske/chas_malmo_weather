@@ -299,7 +299,7 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         char* latStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
         double latitude =  atof(latStr);
         free(latStr);
-        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
+        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "longitude")->valuestring);
         double longitude = atof(lonStr);
         free(lonStr);
         
