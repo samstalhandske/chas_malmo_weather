@@ -4,8 +4,10 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
 
+/*#include <dirent.h>*/
+
+#include "../mcore/utils/tinydir.h"
 
 #include "City.h"
 #include "../mcore/json/cJSON/cJSON.h"
@@ -45,8 +47,8 @@ const char* cities =    "Stockholm:59.3293:18.0686\n" "Göteborg:57.7089:11.9746
 int City_InitializeCitySystem(LinkedListCities* _LLC){
 
     memset(_LLC, 0, sizeof(LinkedListCities));
-    CreateDirectory("cachedcity");
-    CreateDirectory("cachedreports");
+    Directory_Create("cachedcity");
+    Directory_Create("cachedreports");
     
     int parseErrCode = City_ParseDefaultCityString(_LLC, cities);
     assert(parseErrCode == 0);
@@ -252,45 +254,49 @@ int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _L
 
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
 
-    DIR *dir = opendir(dir_path);
-    if (!dir) {
-        perror("opendir failed");
-        return -1;
-    }
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        /* Skip "." and ".." */
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+    tinydir_dir dir;
+    tinydir_open(&dir, dir_path);
+
+    while (dir.has_next)
+    {
+        tinydir_file tiny_file;
+        tinydir_readfile(&dir, &tiny_file);
+
+        if (strcmp(tiny_file.name, ".") == 0 || strcmp(tiny_file.name, "..") == 0)
+        {
+            tinydir_next(&dir);
             continue;
+        }
 
         /* Build full path */
         char full_path[1024];
-        sprintf(full_path, "%s/%s", dir_path, entry->d_name);
+        sprintf(full_path, "%s/%s", dir_path, tiny_file.name);
 
         /* Check if it's a regular file */
-        struct stat st;
-        if (stat(full_path, &st) == -1 || !S_ISREG(st.st_mode))
+        if (!tiny_file.is_dir)
+        {
+            tinydir_next(&dir);
             continue;
-
+        }
 
         FILE* file = fopen(full_path, "r");
-        if (file == NULL){
+        if (file == NULL) {
             printf("Error opening file %s", full_path);
             perror("Error opening file");
             return -1;
         }
-        
+
         fseek(file, 0, SEEK_END);
         long length = ftell(file);
         rewind(file);
 
-        char* JsonString = malloc(length +1);
+        char* JsonString = malloc(length + 1);
         if (JsonString == NULL) {
             fclose(file);
             fprintf(stderr, "Memory allocation failed\n");
             return -1;
         }
-        
+
         fread(JsonString, 1, length, file);
         JsonString[length] = '\0';
         fclose(file);
@@ -300,23 +306,28 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
 
         char* displayName = strdup(cJSON_GetObjectItem(jsonRoot, "displayName")->valuestring);
         char* latStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
-        double latitude =  atof(latStr);
+        double latitude = atof(latStr);
         free(latStr);
         char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "longitude")->valuestring);
         double longitude = atof(lonStr);
         free(lonStr);
-        
+
         /* test if city already in list */
         City* City = City_FindCity(_LLC, displayName);
-        if (City == NULL){
+        if (City == NULL) {
             City_AddCityToLinkedList(_LLC, displayName, latitude, longitude, NULL);
-        }else{ 
-        /* printf("City already in list\n"); */
+        }
+        else {
+            /* printf("City already in list\n"); */
         }
         cJSON_Delete(jsonRoot);
         free(displayName);
+
+        tinydir_next(&dir);
     }
-    closedir(dir);
+
+
+    tinydir_close(&dir);
     return 0;
 }
 

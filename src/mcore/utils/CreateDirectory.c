@@ -19,7 +19,7 @@
         CreateDirectory(MyNewDirectory) :: to create a single directory
         CreateDirectory(Dir1/Dir2/Dir3) :: becomes a directory tree
 */
-int CreateDirectory(const char* _Path) {
+int Directory_Create(const char* _Path) {
     struct stat st = {0};
     char* pathCopy = strdup(_Path);
 

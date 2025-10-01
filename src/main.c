@@ -11,7 +11,20 @@
 #include "mcore/json/json.h"
 #include "mcore/json/fileHelper/fileHelper.h"
 
+#ifdef _WIN32 /* Fixes deprecated warnings on Windows for sprintf, etc */
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#include <Windows.h>
+
 int main() {
+
+#ifdef _WIN32
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
+#endif
+
+
 	bool programShouldExit;
 	LinkedListCities LLC;
 	

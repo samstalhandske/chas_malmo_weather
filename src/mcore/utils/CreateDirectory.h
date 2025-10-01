@@ -1,6 +1,6 @@
 #ifndef CREATEDIRECTORY_H
 #define CREATEDIRECTORY_H
 
-int CreateDirectory(const char* _Path);
+int Directory_Create(const char* _Path);
 
 #endif

@@ -93,7 +93,7 @@ char* Read_JSON_From_File_Return_char(const char* fileName)
     return JsonString;
 }
 
-int DeleteFile(const char* fileName)
+int File_DeleteFile(const char* fileName)
 {
     if (remove(fileName) == 0) {
         return 0;
