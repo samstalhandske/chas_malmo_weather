@@ -67,3 +67,5 @@ main
 obj/
 *.sln
 *.vcxproj
+*.filters
+*.user
