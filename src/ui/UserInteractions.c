@@ -34,7 +34,7 @@ void UserSelectOptions(LinkedListCities* _LLC){
 
     switch(iOption) {
         case 1: {printf("City_AddCityClientUI\n");
-            int errCode = UserInteractionAddCity(_LLC);
+            UserInteractionAddCity(_LLC);
             return;
         }
         case 2: {printf("City_RemoveCityClientUI\n");
@@ -93,7 +93,6 @@ int UserInteractionAddCity(LinkedListCities* _LLC){
 
     double lat;
     double lon;
-    int c;
 
     printf("Enter new City name: ");
     char* newCityName = UserSelectCityChar();
