@@ -10,6 +10,7 @@
 #include "../city/City.h"
 #include "../mcore/utils/dtos.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
+#include "../mcore/console/console.h"
 
 
 char* UserSelectCityChar(){
@@ -26,10 +27,9 @@ char* UserSelectCityChar(){
 void UserSelectOptions(LinkedListCities* _LLC){
 
     int iOption;
-    int c;
     printf("\n\t1. Add City\n\t2. Remove City\n\t3. Edit city\n\t4. Back\n\nMake your choice: ");
     scanf("%d", &iOption);
-    while((c = getchar()) != '\n' && c != EOF);
+    Console_Flush();
     printf("Your selected option: %i\n", iOption);
 
     switch(iOption) {
@@ -48,8 +48,7 @@ void UserSelectOptions(LinkedListCities* _LLC){
             {
                 int editOption;
                 scanf("%d", &editOption);
-                while((c = getchar()) != '\n' && c != EOF);
-
+                Console_Flush();
 
                 printf("Set the value: ");
                 char* getValue = UserSelectCityChar();
@@ -101,11 +100,12 @@ int UserInteractionAddCity(LinkedListCities* _LLC){
 
     printf("Enter latitude: ");
     scanf("%le", &lat);
-    while((c = getchar()) != '\n' && c != EOF);
+    Console_Flush();
 
     printf("Enter longitude: ");
     scanf("%le", &lon);
-    while((c = getchar()) != '\n' && c != EOF);
+    Console_Flush();
+
 
     City* OldCity = City_FindCity(_LLC, newCityName);
     if(OldCity != NULL){
