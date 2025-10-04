@@ -340,12 +340,19 @@ void City_DestroyLinkedListCities(LinkedListCities* _LLC) {
     _LLC->tail = NULL;
 }
 
+
 /* Edits a City's values and saves it */
 int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _NewName, const char* _Latitude, const char* _Longitude)
 {
     if (_LLC == NULL)
     {
         printf("LinkedListCities is NULL!\n");
+        return -1;
+    }
+
+    if (_CityName == NULL)
+    {
+        printf("_CityName is NULL\n");
         return -1;
     }
 
@@ -357,92 +364,79 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
         return -1;
     }
 
-    size_t memoryNeeded = strlen(_CityName) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcities/") + strlen(".json") + 1;
-    char* oldFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+    const size_t jsonExtensionSize = 5;
+    const size_t cachedCityName = strlen("cachedcity/");
 
-    char latBuffer[10];
-    sprintf(latBuffer, "%.4f", _Latitude == NULL ? city->latitude: atof(_Latitude));
-
-    char lonBuffer[10];
-    sprintf(lonBuffer, "%.4f", _Longitude == NULL ? city->longitude : atof(_Longitude));
-
-
-    sprintf(oldFileName, "cachedcities/%s%s%s.json", _CityName, latBuffer, lonBuffer);
+    size_t oldFileNameSize = cachedCityName + jsonExtensionSize + 1 + strlen(city->displayName) + 20; 
     
+    char oldFileName[oldFileNameSize];
+    sprintf(oldFileName, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, city->longitude);
 
-    memoryNeeded = strlen(_NewName) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcities/") + strlen(".json") + 1;
-    
-    char* newfileName = malloc(memoryNeeded);
-
-    sprintf(oldFileName, "cachedcities/%s%s%s.json", _NewName, latBuffer, lonBuffer);
-
-    /* sizeof(_Latitude) + sizeof(_Longitude) */
-    /*
-    printf("Filename: %s\n", fileName);
-    */
-
-    printf("Cooked: %s\n", newfileName);
-
-    if (DoesFileExist(oldFileName) == 1)
+    if (_NewName)
     {
-        cJSON* fileRead = Read_JSON_From_File(oldFileName);
-        DeleteFile(oldFileName);
+        /* 20 is the size for _Latitude and _Longitude, 5 for json extension  */
+        /* + 1 for new line  */
+    
+        sprintf(oldFileName, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, city->longitude);
+        printf("%s\n", oldFileName);
 
-        char* t = cJSON_Print(fileRead);
-
-        printf("%s\n", t);
-        free(t);
-
-        /* Longitude and Latitude will always be max 10 characters */
-
-        /*
-            char latitudeBuffer[10];
-            sprintf(latitudeBuffer, "%s", _Latitude);
-
-            char longitudeBuffer[10];
-            sprintf(longitudeBuffer, "%s", _Longitude);
-        */
-
-        if (_NewName != NULL)
+        if (DoesFileExist(oldFileName))
         {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
+
             cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "displayName", cJSON_CreateString(_NewName));
-        }
-        if (_Latitude != NULL)
-        {
-            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "latitude", cJSON_CreateString(_Latitude));
-        }
-        if (_Longitude != NULL)
-        {
-            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "longitude", cJSON_CreateString(_Longitude));
-        }
-        /*
-            char* yo = cJSON_Print(fileRead);
-        
-            printf("%s\n", yo);
-            free(yo);
-        */
 
-        int result = Write_JSON_To_File(newfileName, fileRead);
-
-
-        if (result == -1)
-        {
-            printf("Failed to write to %s json file", newfileName);
-            free(oldFileName);
-            free(newfileName);
-            return -1;
+            size_t sizeToAdd = 0;
+            sizeToAdd += cachedCityName + strlen(_NewName) + 20 + jsonExtensionSize + 1; 
+            char newFileName[sizeToAdd];
+            sprintf(newFileName, "cachedcity/%s%.4f%.4f.json", _NewName, city->latitude, city->longitude);
+            Write_JSON_To_File(newFileName, fileRead);
+            cJSON_Delete(fileRead);
         }
+    }                                                               
 
-        free(oldFileName);
-        free(newfileName);
-    }
-    else
+    if (_Latitude)
     {
-        printf("City file to edit could not be found!\n");
-        return -1;
-    }
-    
+        if (DoesFileExist(oldFileName))
+        {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
 
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "latitude", cJSON_CreateString(_Latitude));
+
+            char buffer[oldFileNameSize];
+
+            double latToDouble = atof(_Latitude);
+            sprintf(buffer, "cachedcity/%s%.4f%.4f.json", city->displayName, latToDouble, city->longitude);
+            city->latitude = latToDouble;
+
+            Write_JSON_To_File(buffer, fileRead);
+            cJSON_Delete(fileRead);
+        }
+    }
+
+
+    if (_Longitude)
+    {
+        if (DoesFileExist(oldFileName))
+        {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
+
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "longitude", cJSON_CreateString(_Longitude));
+
+            char buffer[oldFileNameSize];
+
+            double lonToDouble = atof(_Longitude);
+            sprintf(buffer, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, lonToDouble);
+            city->longitude = lonToDouble;
+
+
+            Write_JSON_To_File(buffer, fileRead);
+            cJSON_Delete(fileRead);
+        }
+    }
 
     return 0;
 }
