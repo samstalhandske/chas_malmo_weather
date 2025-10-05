@@ -7,12 +7,15 @@
 #include <dirent.h>
 
 
+#include "LinkedListCity.h"
 #include "City.h"
+#include "../weather/Weather.h"
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../mcore/utils/CreateDirectory.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
+#include "../mcore/utils/CreateJsonCacheFilePath.h"
 
 #include "../mcore/json/fileHelper/fileHelper.h"
 
@@ -25,16 +28,9 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path);
 
 /* LOCAL FUNCTIONS */
 
-/* enums for CITY functions @(SS) Vi behöver ha lite ENUM input på det här*/
-typedef enum {
-    CITY_PARSE_OK = 0,
-    CITY_PARSE_FAIL = 1,
-    CITY_ADDTOLINKEDLIST_OK = 0,
-    CITY_ADDTOLINKEDLIST_FAIL = 1,
-    CITY_INIT_OK = 0,
-    CITY_INIT_FAIL = -1
-} City_ReturnENUMS;
+/* enums moved to .h*/
 
+/*  Bootstrapper data for stored cities.    */
 const char* cities =    "Stockholm:59.3293:18.0686\n" "Göteborg:57.7089:11.9746\n" "Malmö:55.6050:13.0038\n" 
                         "Uppsala:59.8586:17.6389\n" "Västerås:59.6099:16.5448\n" "Örebro:59.2741:15.2066\n" 
                         "Linköping:58.4109:15.6216\n" "Helsingborg:56.0465:12.6945\n" "Jönköping:57.7815:14.1562\n" 
@@ -42,22 +38,28 @@ const char* cities =    "Stockholm:59.3293:18.0686\n" "Göteborg:57.7089:11.9746
                         "Sundsvall:62.3908:17.3069\n" "Umeå:63.8258:20.2630\n" "Luleå:65.5848:22.1567\n" 
                         "Kiruna:67.8558:20.2253\n";
 
+/*  These are the first functions that are ment to run at program startup */
 int City_InitializeCitySystem(LinkedListCities* _LLC){
 
     memset(_LLC, 0, sizeof(LinkedListCities));
-    CreateDirectory("cachedcity");
-    CreateDirectory("cachedreports");
+
+    /* cache directory for city information */
+    DirectoryCreate("cachedcity");
+    /* cache directory for http json data */
+    DirectoryCreate("cachedreports");
     
     int parseErrCode = City_ParseDefaultCityString(_LLC, cities);
-    assert(parseErrCode == 0);
+    if(parseErrCode == CITY_PARSE_FAIL)
+        return CITY_INIT_FAIL;
 
     parseErrCode = City_ParseCachedCities(_LLC, "cachedcity");
-    assert(parseErrCode == 0);
+    if(parseErrCode == CITY_PARSE_FAIL)
+        return CITY_INIT_FAIL;
 
     return CITY_INIT_OK;
 }
 
-/* Parse cities from hard coded string */
+/* Parse cities from bootstrap string */
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString){
     printf("Started parsing city list.\n");
     char* DataCopy = strdup(_BootstrapString);
@@ -102,9 +104,8 @@ int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapSt
 				*(ptr) = '\0';
 
 				/* printf("City: <%s>, Latitude: <%s>, Longitude: <%s>\n", displayName, latitudestring, longitudestring); */
-                City_AddCityToLinkedList(_LLC, displayName, atof(latitudestring), atof(longitudestring), NULL);
-
-                City_SaveToJsonFile(displayName, latitudestring, longitudestring);
+                if(City_AddCityToLinkedList(_LLC, displayName, atof(latitudestring), atof(longitudestring), NULL) == CITY_ADDTOLINKEDLIST_FAIL)
+                    return CITY_PARSE_FAIL;
 
 				displayName = NULL;
 				latitudestring = NULL;
@@ -133,7 +134,7 @@ int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double 
     NewCity->displayName = strdup(_DisplayName);
     NewCity->latitude = _Latitude;
     NewCity->longitude = _Longitude;
-
+    NewCity->WeatherData = NULL;
     NewCity->prev = NULL;
     NewCity->next = NULL;
 
@@ -150,12 +151,20 @@ int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double 
     if(_CityPtr != NULL){
         *(_CityPtr) = NewCity;
     }
+    
+/* save to cachedcity/city_lat_lon.json */
+    City_SaveToJsonFile(NewCity);
+
     return CITY_ADDTOLINKEDLIST_OK;
 }
 
 /* removes City from LinkedListCities */
 int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City)
 {
+    /* Free cached report WeatherData object */
+    if(_City->WeatherData != NULL)
+    Weather_DestroyReport(_City->WeatherData);
+    
     if(_City->next == NULL && _City->prev == NULL)
     {
         _LLC->head = NULL;
@@ -176,36 +185,18 @@ int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City)
         _City->prev->next = _City->next;
         _City->next->prev = _City->prev;
     }
-    size_t memoryNeeded = strlen(_City->displayName) + sizeof(_City->latitude) + sizeof(_City->longitude) + strlen("cachedreports/") + strlen(".json") + 1;
-    char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
-    sprintf(JsonFileName, "cachedcity/%s%.4f%.4f.json", _City->displayName, _City->latitude, _City->longitude);
-    DeleteFile(JsonFileName); 
-    free(JsonFileName);
+    
+    /* construct city cached file name*/
+    char* jsonFilename = ConstructCityCacheFilePath(_City);
+
+    DeleteFile(jsonFilename); 
+    free(jsonFilename);
+    free(_City->displayName);
     free(_City);
 
     return 0;
 }
 
-/* Print objects in LinkedListCities */
-void City_DisplayLinkedListCities(LinkedListCities* _LLC)
-{
-	City* current = _LLC->head;
-	if(current == NULL)
-	{
-		printf("No cities to print\n");
-		return;
-	}
-    int i = 1;
-	do
-	{
-		printf("%s\t", current->displayName);
-        if(strlen(current->displayName)< 8) printf("\t");
-		current = current->next;
-        if (i % 5 == 0) printf("\n");
-        i++;
-	} while (current != NULL);
-    printf("\n");
-}
 
 /* get city by name, returns NULL in case of no city found*/
 City* City_FindCity(LinkedListCities* _LLC, const char* _Name) {
@@ -221,22 +212,22 @@ City* City_FindCity(LinkedListCities* _LLC, const char* _Name) {
     return NULL;
 }
 
-int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){    
-    size_t memoryNeeded = strlen(_Name) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcity/") + strlen(".json") + 1;
-    char* jsonFilePath = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
-    sprintf(jsonFilePath, "cachedcity/%s%.7s%.7s.json", _Name, _Latitude, _Longitude);
+/* saves a single City data to json file */
+int City_SaveToJsonFile(City* _City){    
+
+    char* jsonFilePath = ConstructCityCacheFilePath(_City);
 
     FILE* file = fopen(jsonFilePath, "w");
     if (file == NULL){
         printf("Error opening file %s", jsonFilePath);
         perror("Error opening file");
-        return -1;
+        return CITY_SAVETOJSON_FAIL;
     }
     cJSON* jsonRoot = cJSON_CreateObject();
 
-    cJSON_AddStringToObject(jsonRoot, "displayName", _Name);
-    cJSON_AddStringToObject(jsonRoot, "latitude", _Latitude);
-    cJSON_AddStringToObject(jsonRoot, "longitude", _Longitude);
+    cJSON_AddStringToObject(jsonRoot, "displayName", _City->displayName);
+    cJSON_AddNumberToObject(jsonRoot, "latitude", _City->latitude);
+    cJSON_AddNumberToObject(jsonRoot, "longitude", _City->longitude);
 
     char* jsonString = cJSON_Print(jsonRoot);
 
@@ -247,15 +238,16 @@ int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _L
     free(jsonString);
     free(jsonFilePath);
 
-    return 0;
+    return CITY_SAVETOJSON_OK;
 }
 
+/* reads stored city json data and creates */
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
 
     DIR *dir = opendir(dir_path);
     if (!dir) {
         perror("opendir failed");
-        return -1;
+        return CITY_PARSE_FAIL;
     }
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
@@ -277,7 +269,7 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         if (file == NULL){
             printf("Error opening file %s", full_path);
             perror("Error opening file");
-            return -1;
+            return CITY_PARSE_FAIL;
         }
         
         fseek(file, 0, SEEK_END);
@@ -290,21 +282,17 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
             fprintf(stderr, "Memory allocation failed\n");
             return -1;
         }
-        
+
         fread(JsonString, 1, length, file);
         JsonString[length] = '\0';
         fclose(file);
 
         cJSON* jsonRoot = cJSON_Parse(JsonString);
         free(JsonString);
-
         char* displayName = strdup(cJSON_GetObjectItem(jsonRoot, "displayName")->valuestring);
-        char* latStr = strdup(cJSON_GetObjectItem(jsonRoot, "latitude")->valuestring);
-        double latitude =  atof(latStr);
-        free(latStr);
-        char* lonStr = strdup(cJSON_GetObjectItem(jsonRoot, "longitude")->valuestring);
-        double longitude = atof(lonStr);
-        free(lonStr);
+        double latitude = (cJSON_GetObjectItem(jsonRoot, "latitude"))->valuedouble;
+        double longitude = (cJSON_GetObjectItem(jsonRoot, "longitude"))->valuedouble;
+        
         
         /* test if city already in list */
         City* City = City_FindCity(_LLC, displayName);
@@ -317,28 +305,9 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         free(displayName);
     }
     closedir(dir);
-    return 0;
+    return CITY_PARSE_OK;
 }
 
-void City_DestroyLinkedListCities(LinkedListCities* _LLC) {
-    City* current = _LLC->head;
-    int i = 0;
-    while (current != NULL) {
-        City* next = current->next;
-        /* printf("Freeing city: %s\n", current->displayName); */
-        /* Free any dynamically allocated fields */
-        free(current->displayName);
-
-        /* Free the node itself */
-        free(current);
-
-        current = next;
-        i++;
-    }
-    /* printf("Total freed cities: %i\n", i); */
-    _LLC->head = NULL;
-    _LLC->tail = NULL;
-}
 
 /* Edits a City's values and saves it */
 int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _NewName, const char* _Latitude, const char* _Longitude)
@@ -346,6 +315,12 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
     if (_LLC == NULL)
     {
         printf("LinkedListCities is NULL!\n");
+        return -1;
+    }
+
+    if (_CityName == NULL)
+    {
+        printf("_CityName is NULL\n");
         return -1;
     }
 
@@ -357,148 +332,79 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
         return -1;
     }
 
-    size_t memoryNeeded = strlen(_CityName) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcities/") + strlen(".json") + 1;
-    char* oldFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+    const size_t jsonExtensionSize = 5;
+    const size_t cachedCityName = strlen("cachedcity/");
 
-    char latBuffer[10];
-    sprintf(latBuffer, "%.4f", _Latitude == NULL ? city->latitude: atof(_Latitude));
-
-    char lonBuffer[10];
-    sprintf(lonBuffer, "%.4f", _Longitude == NULL ? city->longitude : atof(_Longitude));
-
-
-    sprintf(oldFileName, "cachedcities/%s%s%s.json", _CityName, latBuffer, lonBuffer);
+    size_t oldFileNameSize = cachedCityName + jsonExtensionSize + 1 + strlen(city->displayName) + 20; 
     
+    char oldFileName[oldFileNameSize];
+    sprintf(oldFileName, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, city->longitude);
 
-    memoryNeeded = strlen(_NewName) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcities/") + strlen(".json") + 1;
-    
-    char* newfileName = malloc(memoryNeeded);
-
-    sprintf(oldFileName, "cachedcities/%s%s%s.json", _NewName, latBuffer, lonBuffer);
-
-    /* sizeof(_Latitude) + sizeof(_Longitude) */
-    /*
-    printf("Filename: %s\n", fileName);
-    */
-
-    printf("Cooked: %s\n", newfileName);
-
-    if (DoesFileExist(oldFileName) == 1)
+    if (_NewName)
     {
-        cJSON* fileRead = Read_JSON_From_File(oldFileName);
-        DeleteFile(oldFileName);
+        /* 20 is the size for _Latitude and _Longitude, 5 for json extension  */
+        /* + 1 for new line  */
+    
+        sprintf(oldFileName, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, city->longitude);
+        printf("%s\n", oldFileName);
 
-        char* t = cJSON_Print(fileRead);
-
-        printf("%s\n", t);
-        free(t);
-
-        /* Longitude and Latitude will always be max 10 characters */
-
-        /*
-            char latitudeBuffer[10];
-            sprintf(latitudeBuffer, "%s", _Latitude);
-
-            char longitudeBuffer[10];
-            sprintf(longitudeBuffer, "%s", _Longitude);
-        */
-
-        if (_NewName != NULL)
+        if (DoesFileExist(oldFileName))
         {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
+
             cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "displayName", cJSON_CreateString(_NewName));
-        }
-        if (_Latitude != NULL)
-        {
-            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "latitude", cJSON_CreateString(_Latitude));
-        }
-        if (_Longitude != NULL)
-        {
-            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "longitude", cJSON_CreateString(_Longitude));
-        }
-        /*
-            char* yo = cJSON_Print(fileRead);
-        
-            printf("%s\n", yo);
-            free(yo);
-        */
 
-        int result = Write_JSON_To_File(newfileName, fileRead);
-
-
-        if (result == -1)
-        {
-            printf("Failed to write to %s json file", newfileName);
-            free(oldFileName);
-            free(newfileName);
-            return -1;
+            size_t sizeToAdd = 0;
+            sizeToAdd += cachedCityName + strlen(_NewName) + 20 + jsonExtensionSize + 1; 
+            char newFileName[sizeToAdd];
+            sprintf(newFileName, "cachedcity/%s%.4f%.4f.json", _NewName, city->latitude, city->longitude);
+            Write_JSON_To_File(newFileName, fileRead);
+            cJSON_Delete(fileRead);
         }
+    }                                                               
 
-        free(oldFileName);
-        free(newfileName);
-    }
-    else
+    if (_Latitude)
     {
-        printf("City file to edit could not be found!\n");
-        return -1;
-    }
-    
+        if (DoesFileExist(oldFileName))
+        {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
 
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "latitude", cJSON_CreateString(_Latitude));
+
+            char buffer[oldFileNameSize];
+
+            double latToDouble = atof(_Latitude);
+            sprintf(buffer, "cachedcity/%s%.4f%.4f.json", city->displayName, latToDouble, city->longitude);
+            city->latitude = latToDouble;
+
+            Write_JSON_To_File(buffer, fileRead);
+            cJSON_Delete(fileRead);
+        }
+    }
+
+
+    if (_Longitude)
+    {
+        if (DoesFileExist(oldFileName))
+        {
+            cJSON* fileRead = Read_JSON_From_File(oldFileName);
+            DeleteFile(oldFileName);
+
+            cJSON_ReplaceItemInObjectCaseSensitive(fileRead, "longitude", cJSON_CreateString(_Longitude));
+
+            char buffer[oldFileNameSize];
+
+            double lonToDouble = atof(_Longitude);
+            sprintf(buffer, "cachedcity/%s%.4f%.4f.json", city->displayName, city->latitude, lonToDouble);
+            city->longitude = lonToDouble;
+
+
+            Write_JSON_To_File(buffer, fileRead);
+            cJSON_Delete(fileRead);
+        }
+    }
 
     return 0;
 }
-
-
-/* ############################# OLD FUNCTIONS #############################*/
-
-/*
-void buildDatabase()
-{    
-    int count = 0;
-    const char* ptr = cities;
-
-    while (*ptr) 
-    {
-        char name[100];
-        double lat, lon;
-        int n = sscanf(ptr, "%99[^:]:%lf:%lf\n", name, &lat, &lon);
-
-        if (n == 3) 
-        {
-            City* city = &cityArray[count];
-            
-            strcpy(city->name, name);
-            city->latitude = lat;
-            city->longitude = lon;
-            
-            snprintf(&city->URL[0], sizeof(city->URL),
-                "https://api.open-meteo.com/v1/forecast?latitude=%lf&longitude=%lf&current_weather=true", lat, lon);
-            count++;
-        }
-                    
-        const char* next = strchr(ptr, '\n');
-        if (!next) break;
-        ptr = next + 1;
-    }
-}
-
-void listCities()
-{
-    int count = sizeof(cityArray) / sizeof(cityArray[0]);
-    int i = 0;
-    for(;i < count - 1; i++)
-    {
-        printf("%i. %s\n", i+1, cityArray[i].name);
-    }
-}
-
-City* fetchCity(int selectedCityIndex) {
-    if(selectedCityIndex < 0) {
-        return NULL;
-    }
-    if(selectedCityIndex >= sizeof(cityArray) / sizeof(cityArray[0])) {
-        return NULL;
-    }
-
-    return &cityArray[selectedCityIndex];
-}
-    */
