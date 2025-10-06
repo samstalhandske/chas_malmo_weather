@@ -371,6 +371,10 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
 
             size_t sizeToAdd = 0;
             sizeToAdd += cachedCityName + strlen(_NewName) + 20 + jsonExtensionSize + 1; 
+
+            city->displayName = realloc(city->displayName, strlen(city->displayName) + 1);
+            city->displayName = strdup(_NewName);
+
             char newFileName[sizeToAdd];
             sprintf(newFileName, "cachedcity/%s%.4f%.4f.json", _NewName, city->latitude, city->longitude);
             Write_JSON_To_File(newFileName, fileRead);
