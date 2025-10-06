@@ -8,7 +8,7 @@
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../city/City.h"
-#include "../City/LinkedListCity.h"
+#include "../city/LinkedListCity.h"
 #include "../mcore/utils/dtos.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
 
