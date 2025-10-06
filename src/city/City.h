@@ -59,11 +59,4 @@ typedef enum {
 
 int City_SaveToJsonFile(City* _City);
 
-/*
-void buildDatabase();
-void listCities();
-int citySelect();
-City* fetchCity(int choice);
-*/
-
 #endif

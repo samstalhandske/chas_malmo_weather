@@ -1,11 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <dirent.h>
-
 
 #include "LinkedListCity.h"
 #include "City.h"
@@ -34,7 +31,7 @@ int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapSt
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path);
 
 
-/*  These are the first functions that are ment to run at program startup */
+/*  Initializes LinkedList and directories */
 int City_InitializeCitySystem(LinkedListCities* _LLC){
 
     memset(_LLC, 0, sizeof(LinkedListCities));
@@ -45,19 +42,22 @@ int City_InitializeCitySystem(LinkedListCities* _LLC){
     DirectoryCreate("cachedreports");
     
     int parseErrCode = City_ParseDefaultCityString(_LLC, cities);
-    if(parseErrCode == CITY_PARSE_FAIL)
+    if(parseErrCode == CITY_PARSE_FAIL){
+        LLC_DestroyLinkedListCities(_LLC);
         return CITY_INIT_FAIL;
-
+    }
     parseErrCode = City_ParseCachedCities(_LLC, "cachedcity");
-    if(parseErrCode == CITY_PARSE_FAIL)
+    if(parseErrCode == CITY_PARSE_FAIL){
+        LLC_DestroyLinkedListCities(_LLC);
         return CITY_INIT_FAIL;
-
+    }
     return CITY_INIT_OK;
 }
 
 /* Parse cities from bootstrap string */
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString){
-    printf("Started parsing city list.\n");
+
+    /* copy of const char* because we will replace delimiters */
     char* DataCopy = strdup(_BootstrapString);
 
     if(DataCopy == NULL){
@@ -99,7 +99,6 @@ int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapSt
 			{
 				*(ptr) = '\0';
 
-				/* printf("City: <%s>, Latitude: <%s>, Longitude: <%s>\n", displayName, latitudestring, longitudestring); */
                 if(City_AddCityToLinkedList(_LLC, displayName, atof(latitudestring), atof(longitudestring), NULL) == CITY_ADDTOLINKEDLIST_FAIL)
                     return CITY_PARSE_FAIL;
 
@@ -113,14 +112,14 @@ int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapSt
 
 	} while (*(ptr) != '\0');
 	
-	printf("Finished parsing city list.\n");
     free(DataCopy);
+    DataCopy = NULL;
     ptr = NULL;
     return CITY_PARSE_OK;
 }
 
 
-/* reads stored city json data and creates */
+/* reads stored city json data and adds nodes to LinkedList */
 int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
 
     DIR *dir = opendir(dir_path);
@@ -178,7 +177,7 @@ int City_ParseCachedCities(LinkedListCities* _LLC, const char* dir_path){
         if (City == NULL){
             City_AddCityToLinkedList(_LLC, displayName, latitude, longitude, NULL);
         }else{ 
-        /* printf("City already in list\n"); */
+        /* Already in list // Do nothing to not make list  doubles */
         }
         cJSON_Delete(jsonRoot);
         free(displayName);
@@ -201,7 +200,7 @@ City* City_FindCity(LinkedListCities* _LLC, const char* _Name) {
     return NULL;
 }
 
-/* Adds a city to the LinkedListCities */
+/* Adds a city to the LinkedListCities and saves city as json data */
 int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double _Latitude, double _Longitude, City** _CityPtr) {
     City* NewCity = (City*)malloc(sizeof(City));
     if(NewCity == NULL){
@@ -230,7 +229,7 @@ int City_AddCityToLinkedList(LinkedListCities* _LLC, char* _DisplayName, double 
         *(_CityPtr) = NewCity;
     }
     
-/* save to cachedcity/city_lat_lon.json */
+    /* save to cachedcity/city_lat_lon.json */
     City_SaveToJsonFile(NewCity);
 
     return CITY_ADDTOLINKEDLIST_OK;
@@ -306,8 +305,6 @@ void LLC_DestroyLinkedListCities(LinkedListCities* _LLC) {
     int i = 0;
     while (current != NULL) {
         City* next = current->next;
-        /* printf("Freeing city: %s\n", current->displayName); */
-        /* Free any dynamically allocated fields */
 
         /* if there is a weather report, free it! */
         if(current->WeatherData != NULL)
@@ -321,12 +318,11 @@ void LLC_DestroyLinkedListCities(LinkedListCities* _LLC) {
         current = next;
         i++;
     }
-    /* printf("Total freed cities: %i\n", i); */
     _LLC->head = NULL;
     _LLC->tail = NULL;
 }
 
-
+/* TODO: Fix writing to JSON as NUMBER instead of STRING. make name change also impact LinkedList */
 /* Edits a City's values and saves it */
 int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _NewName, const char* _Latitude, const char* _Longitude)
 {
@@ -346,7 +342,7 @@ int City_EditCity(LinkedListCities* _LLC, const char* _CityName, const char* _Ne
 
     if (city == NULL)
     {
-        printf("City to edit does could not be found!\n");
+        printf("City to edit could not be found!\n");
         return -1;
     }
 

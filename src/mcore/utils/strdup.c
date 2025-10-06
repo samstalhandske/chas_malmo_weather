@@ -9,7 +9,6 @@ char* strdup(const char* str){
 	if(copy == NULL)
 		return NULL;
 	strcpy(copy, str);
-	/*printf("[ALLOC] strdup: %s -> %p\n", str, (void*)copy);*/
 	return copy;
 }
 #endif

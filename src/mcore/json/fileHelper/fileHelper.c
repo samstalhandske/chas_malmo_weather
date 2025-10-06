@@ -36,7 +36,7 @@ cJSON* Read_JSON_From_File(const char* fileName)
     return root;
 }
 
-	
+/* returns 0 for success and -1 for failure */
 int Write_JSON_To_File(const char* fileName, cJSON* JSON_Object)
 {
 	assert(JSON_Object != NULL);

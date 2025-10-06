@@ -1,25 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 #include "ui/ClientUI.h"
-#include "../mcore/json/cJSON/cJSON.h"
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../city/City.h"
 #include "../city/LinkedListCity.h"
-#include "../mcore/utils/dtos.h"
+#include "../mcore/console/console.h"
 #include "../weather/Weather.h"
-/*#include "../mcore/json/fileHelper/fileHelper.h"*/
-
-/*#include "mcore/http/http.h"*/
-/*#include "mcore/json/json.h"*/
-/*#include "mcore/json/fileHelper/fileHelper.h"*/
 
 /* Returns memory allocd char* string.  remember to free() after use! Formats user input to UPPERCASE first character, rest lowercase characters */
 char* ClientUI_GetUserInputChar(){
-/* Get user input and format with FormatUserInput */
     char buffer[100];
     fgets(buffer, sizeof(buffer), stdin);
     buffer[strcspn(buffer, "\n")] = '\0';
@@ -29,30 +21,30 @@ char* ClientUI_GetUserInputChar(){
     return returnString;
 }
 
-void ClientUI_Run(){
-    	bool programShouldExit;
+/* Main client program loop */
+int Client_Run(){
 	LinkedListCities LLC;
 	
-	if(City_InitializeCitySystem(&LLC) == CITY_INIT_OK){
-		programShouldExit = false;
-		printf("<===================# Welcome to the Weather App! #===================>\n\n");
-	}else{
+	if(City_InitializeCitySystem(&LLC) != CITY_INIT_OK){
 		printf("City_Initialize failed");
-		programShouldExit = true;
+        return -1;
 	}
 	
-	while (programShouldExit == false) {
+    printf("<===================# Welcome to the Weather App! #===================>\n\n");
+	
+	while (true) {
 		if(LLC_DisplayLinkedListCities(&LLC) == LLC_DISPLAY_NOCITIESFOUND)
 			printf("\n\nNo cached cities found!\n\n");
 
 	    printf("\nOptions(O/0) for options, Exit(E/Q) to exit.\nSelect a city: ");
 		char* userInput = ClientUI_GetUserInputChar();
-		/* printf("Recorded input: %s\n", userInput); */
 
 		if (strcmp(userInput, "Exit") == 0 || strcmp(userInput, "Quit") == 0 || strcmp(userInput, "Q") == 0 || strcmp(userInput, "E") == 0){
-			programShouldExit = true;
+			free(userInput);
+            break;
 		}
-		else if (strcmp(userInput, "Options") == 0 || strcmp(userInput, "0") == 0 || strcmp(userInput, "O") == 0){
+		
+        if (strcmp(userInput, "Options") == 0 || strcmp(userInput, "0") == 0 || strcmp(userInput, "O") == 0){
 			ClientUI_Options(&LLC);
 		}
 		else{
@@ -70,7 +62,7 @@ void ClientUI_Run(){
 		free(userInput);
 	}
 	LLC_DestroyLinkedListCities(&LLC);
-	/* printf("Exiting weather app...\n"); */
+    return 0;
 }
 
 /* Options UI. magic switch case for maximized user comfort. No warranty, no refunds and no responsibility. */
@@ -81,7 +73,6 @@ void ClientUI_Options(LinkedListCities* _LLC){
     printf("\n\t1. Add City\n\t2. Remove City\n\t3. Edit city\n\t4. Back\n\nOption: ");
     scanf("%d", &iOption);
     while((c = getchar()) != '\n' && c != EOF);
-    /* printf("Your selected option: %i\n", iOption); */
 
     switch(iOption) {
         case 1: {printf("City_AddCityClientUI\n");
@@ -140,48 +131,43 @@ void ClientUI_Options(LinkedListCities* _LLC){
     return;
 }
 
+/* add new city from user input */
 int UserInteractionAddCity(LinkedListCities* _LLC){
 
     double lat;
     double lon;
-    int c;
 
     printf("Enter new City name: ");
     char* newCityName = ClientUI_GetUserInputChar();
 
     printf("Enter latitude: ");
     scanf("%le", &lat);
-    while((c = getchar()) != '\n' && c != EOF);
+    Console_Flush();
 
     printf("Enter longitude: ");
     scanf("%le", &lon);
-    while((c = getchar()) != '\n' && c != EOF);
-
+    Console_Flush();
+    
+    /* guard against doubles in LinkedList */
     City* OldCity = City_FindCity(_LLC, newCityName);
     if(OldCity != NULL){
         printf("New city name \"%s\" already exists!\n", newCityName);
         free(newCityName);
         return 1;
-    }else
-    {   
-        int addCityErrCode =  City_AddCityToLinkedList(_LLC, newCityName, lat, lon, NULL);
-        if (addCityErrCode != 0){
-            free(newCityName);
-            return -1;
-        }
-        char* strLat = doubleToString(lat);
-        char* strLon = doubleToString(lon);
-    
-        /* City_SaveToJsonFile(newCityName, strLat, strLon); */
-    
-        free(newCityName);
-        free(strLat);
-        free(strLon);
     }
+
+    int addCityErrCode =  City_AddCityToLinkedList(_LLC, newCityName, lat, lon, NULL);
+    if (addCityErrCode != 0){
+        free(newCityName);
+        return -1;
+    }
+
+    free(newCityName);
 
     return 0;
 }
 
+/* Remove city from user input */
 int UserInteractionRemoveCity(LinkedListCities* _LLC){
     
     printf("Enter city to remove: \n");
@@ -192,38 +178,8 @@ int UserInteractionRemoveCity(LinkedListCities* _LLC){
         printf("No city by that name found. No city removed.\n");
         return 1;
     }
-    else
-    {
-        City_RemoveCityFromLinkedList(_LLC, selectedCity);
-    }
+
+    City_RemoveCityFromLinkedList(_LLC, selectedCity);
+    
     return 0;
-}
-
-/* User input and returns City in one go. deprecated*/
-int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity){
-    
-/* Get user input and format with FormatUserInput */
-    char buffer[100];
-    printf("Select a city: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    buffer[strcspn(buffer, "\n")] = '\0';
-    CaseFormatSwedish(buffer);
-
-/*  return -1 = exit    return 0 = city match found     return 1 = no match     */
-    City* current = _LLC->head;
-
-    if (strcmp(buffer, "Exit") == 0 || strcmp(buffer, "Quit") == 0 || strcmp(buffer, "Q") == 0  )
-        return -1;
-    
-    while (current != NULL) {
-        if (strcmp(current->displayName, buffer) == 0)
-        {   
-            *_SelectedCity = current;
-            /* printf("current: %s\n",current->DisplayName); */
-            /* printf("find city display name: %s\n", (*_SelectedCity)->DisplayName); */
-            return 0;
-        }
-        current = current->next;
-    }
-    return 1;
 }

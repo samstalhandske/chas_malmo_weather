@@ -18,6 +18,7 @@
     usage: 
         CreateDirectory(MyNewDirectory) :: to create a single directory
         CreateDirectory(Dir1/Dir2/Dir3) :: becomes a directory tree
+    returns 0 as success, -1 as failure (or directory already exists)
 */
 int DirectoryCreate(const char* _Path) {
     struct stat st = {0};
@@ -37,7 +38,6 @@ int DirectoryCreate(const char* _Path) {
 
         if (stat(fullPath, &st) == -1) {
             if (MKDIR(fullPath) == 0) {
-                /* printf("Directory created: %s\n", fullPath); */
             } else {
                 perror("mkdir failed");
                 free(pathCopy);
