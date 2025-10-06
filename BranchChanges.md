@@ -1,6 +1,6 @@
 # Changelog (partial)
 - cachedcity json data saves **latitude and longitude numbers (double)** instead of char string. *Delete cachedcity folder in case of parse errors.*
-- Two functions related to linked list moved from `City.c` to `LinkedListCity.c`
+- Many functions related to linked list moved from `City.c` to `LinkedListCity.c`
 - `City_AddCityToLinkedList()` now handles saving City as json data in cache.
 - `City_SaveJsonToFile()` now takes a `City*` as argument instead of multiple variables.
 - `Weather_GetReport()` now takes a `City*` as argument instead of multiple variables.
