@@ -15,5 +15,7 @@ int UserInteractionAddCity(LinkedListCities* _LLCPtr);
 
 int UserInteractionRemoveCity(LinkedListCities* _LLC);
 
+void ClientUI_Run();
+
 
 #endif
