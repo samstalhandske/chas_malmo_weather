@@ -3,17 +3,17 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "ui/UserInteractions.h"
+#include "ui/ClientUI.h"
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../mcore/utils/CaseFormSwe.h"
 #include "../mcore/utils/strdup.h"
 #include "../city/City.h"
+#include "../City/LinkedListCity.h"
 #include "../mcore/utils/dtos.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
-#include "../mcore/console/console.h"
 
-
-char* UserSelectCityChar(){
+/* Returns memory allocd char* string.  remember to free() after use! Formats user input to UPPERCASE first character, rest lowercase characters */
+char* ClientUI_GetUserInputChar(){
 /* Get user input and format with FormatUserInput */
     char buffer[100];
     fgets(buffer, sizeof(buffer), stdin);
@@ -24,13 +24,15 @@ char* UserSelectCityChar(){
     return returnString;
 }
 
-void UserSelectOptions(LinkedListCities* _LLC){
+/* Options UI. magic switch case for maximized user comfort. No warranty, no refunds and no responsibility. */
+void ClientUI_Options(LinkedListCities* _LLC){
 
     int iOption;
-    printf("\n\t1. Add City\n\t2. Remove City\n\t3. Edit city\n\t4. Back\n\nMake your choice: ");
+    int c;
+    printf("\n\t1. Add City\n\t2. Remove City\n\t3. Edit city\n\t4. Back\n\nOption: ");
     scanf("%d", &iOption);
-    Console_Flush();
-    printf("Your selected option: %i\n", iOption);
+    while((c = getchar()) != '\n' && c != EOF);
+    /* printf("Your selected option: %i\n", iOption); */
 
     switch(iOption) {
         case 1: {printf("City_AddCityClientUI\n");
@@ -48,14 +50,15 @@ void UserSelectOptions(LinkedListCities* _LLC){
             {
                 int editOption;
                 scanf("%d", &editOption);
-                Console_Flush();
+                while((c = getchar()) != '\n' && c != EOF);
+
 
                 printf("Set the value: ");
-                char* getValue = UserSelectCityChar();
+                char* getValue = ClientUI_GetUserInputChar();
 
 
                 printf("\nEnter your city: ");
-                char* cityToEdit = UserSelectCityChar();
+                char* cityToEdit = ClientUI_GetUserInputChar();
 
                 switch (editOption)
                 {
@@ -73,18 +76,17 @@ void UserSelectOptions(LinkedListCities* _LLC){
                         printf("Not a valid edit option!\n");
                         continue;
                 }
-
-
-
+                free(getValue);
+                free(cityToEdit);
                 break;
             }
 
             return;
         }
-        case 4: {printf("return to main\n");
+        case 4: {printf("return to main.\n");
             return;
         }
-        default: printf("No valid option selected\n");
+        default: printf("No valid option selected.\n");
     }
     return;
 }
@@ -93,37 +95,40 @@ int UserInteractionAddCity(LinkedListCities* _LLC){
 
     double lat;
     double lon;
+    int c;
 
     printf("Enter new City name: ");
-    char* newCityName = UserSelectCityChar();
+    char* newCityName = ClientUI_GetUserInputChar();
 
     printf("Enter latitude: ");
     scanf("%le", &lat);
-    Console_Flush();
+    while((c = getchar()) != '\n' && c != EOF);
 
     printf("Enter longitude: ");
     scanf("%le", &lon);
-    Console_Flush();
-
+    while((c = getchar()) != '\n' && c != EOF);
 
     City* OldCity = City_FindCity(_LLC, newCityName);
     if(OldCity != NULL){
         printf("New city name \"%s\" already exists!\n", newCityName);
+        free(newCityName);
         return 1;
     }else
     {   
         int addCityErrCode =  City_AddCityToLinkedList(_LLC, newCityName, lat, lon, NULL);
         if (addCityErrCode != 0){
+            free(newCityName);
             return -1;
         }
+        char* strLat = doubleToString(lat);
+        char* strLon = doubleToString(lon);
+    
+        /* City_SaveToJsonFile(newCityName, strLat, strLon); */
+    
+        free(newCityName);
+        free(strLat);
+        free(strLon);
     }
-    char* strLat = doubleToString(lat);
-    char* strLon = doubleToString(lon);
-
-    City_SaveToJsonFile(newCityName, strLat, strLon);
-
-    free(strLat);
-    free(strLon);
 
     return 0;
 }
@@ -131,22 +136,21 @@ int UserInteractionAddCity(LinkedListCities* _LLC){
 int UserInteractionRemoveCity(LinkedListCities* _LLC){
     
     printf("Enter city to remove: \n");
-    char* removeName = UserSelectCityChar();
-
+    char* removeName = ClientUI_GetUserInputChar();
     City* selectedCity = City_FindCity(_LLC, removeName);
+    free(removeName);
     if(selectedCity == NULL){
-        printf("City \"%s\" not found.\n", removeName);
+        printf("No city by that name found. No city removed.\n");
         return 1;
     }
     else
     {
         City_RemoveCityFromLinkedList(_LLC, selectedCity);
     }
-
-    
     return 0;
 }
 
+/* User input and returns City in one go. deprecated*/
 int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity){
     
 /* Get user input and format with FormatUserInput */
@@ -173,5 +177,4 @@ int UserSelectCity(LinkedListCities* _LLC, City** _SelectedCity){
         current = current->next;
     }
     return 1;
-
 }

@@ -2,26 +2,17 @@
 #define WEATHER_H
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 #include "../mcore/json/cJSON/cJSON.h"
 #include "../city/City.h"
 #include "../mcore/http/http.h"
 
-typedef struct {
-    char* cityname; 
-    double latitude;
-    double longitude;
-    long long timestamp;
-    double windspeed;
-    int temperature;
-    int weathercode;
-    char* description;
-    char* windDirectionVerbose;
-} WeatherReport;
+int Weather_GetReport(City* _City);
 
-WeatherReport Weather_GetReport(char* _CityName, double _Latitude, double _Longitude);
-
-void Weather_Print(WeatherReport* report);
+void Weather_PrintReport(City* _City);
+void Weather_PrintALL(City* _City);
 
 void Weather_DestroyReport(WeatherReport* report);
 
