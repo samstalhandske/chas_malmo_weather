@@ -97,7 +97,7 @@ src/
 ## Maintainers
 - [samstalhandske](https://github.com/samstalhandske)
 - [pontusrosenquist](https://github.com/pontusrosenquistgmailcom)
-- [Emilio](https://github.com/AlCapone1234)
+- [Emilio](https://github.com/AlCapone1234) / [Emilios other account](https://github.com/samstalhandske/chas_malmo_weather/commits?author=pooppoop)
 - [lukas.stade96@gmail.com](https://github.com/HoffaQt)
 - [Pär Lundh](https://github.com/lundhpargmailcom)
 - [Henrik Westerlund](https://github.com/Henrik-Westerlund)
