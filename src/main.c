@@ -11,19 +11,20 @@
 #include "mcore/json/json.h"
 #include "mcore/json/fileHelper/fileHelper.h"
 
-#ifdef _WIN32 /* Fixes deprecated warnings on Windows for sprintf, etc */
-#define _CRT_SECURE_NO_WARNINGS
+#include <locale.h>
+
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS /* Fixes deprecated warnings on Windows for sprintf, etc */
+#include <Windows.h>
 #endif
 
-#include <Windows.h>
-
 int main() {
+
 
 #ifdef _WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 #endif
-
 
 	bool programShouldExit;
 	LinkedListCities LLC;
@@ -40,7 +41,6 @@ int main() {
 	
 	while (programShouldExit == false) {
 		City_DisplayLinkedListCities(&LLC);
-
 
 	    printf("\nOptions for options, Exit (Quit or Q) to exit.\nSelect a city: ");
 		char* userInput = UserSelectCityChar();

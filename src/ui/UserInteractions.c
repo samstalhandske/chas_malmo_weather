@@ -11,16 +11,28 @@
 #include "../mcore/utils/dtos.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
 
+#include <Windows.h>
 
-char* UserSelectCityChar(){
-/* Get user input and format with FormatUserInput */
+#include <locale.h>
+
+char* UserSelectCityChar() {
+
     char buffer[100];
-    fgets(buffer, sizeof(buffer), stdin);
+    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+        return NULL;
+    }
     buffer[strcspn(buffer, "\n")] = '\0';
-    char* returnString = strdup(buffer);
-    CaseFormatSwedish(returnString);
 
-    return returnString;
+    char* returnString = strdup(buffer);
+    // CaseFormatSwedish(returnString);
+
+    for (size_t i = 0; i < strlen(returnString); i++) {
+        printf("%02X ", (unsigned char)returnString[i]);
+    }
+    puts("");
+
+
+    return returnString; // return user input, not hardcoded string
 }
 
 void UserSelectOptions(LinkedListCities* _LLC){

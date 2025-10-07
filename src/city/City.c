@@ -16,9 +16,6 @@
 #include "../mcore/utils/CreateDirectory.h"
 #include "../mcore/json/fileHelper/fileHelper.h"
 
-#include "../mcore/json/fileHelper/fileHelper.h"
-
-
 /* LOCAL FUNCTIONS */
 
 int City_ParseDefaultCityString(LinkedListCities* _LLC, const char* _BootstrapString);
@@ -181,7 +178,7 @@ int City_RemoveCityFromLinkedList(LinkedListCities* _LLC, City* _City)
     size_t memoryNeeded = strlen(_City->displayName) + sizeof(_City->latitude) + sizeof(_City->longitude) + strlen("cachedreports/") + strlen(".json") + 1;
     char* JsonFileName = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
     sprintf(JsonFileName, "cachedcity/%s%.4f%.4f.json", _City->displayName, _City->latitude, _City->longitude);
-    DeleteFile(JsonFileName); 
+    File_DeleteFile(JsonFileName); 
     free(JsonFileName);
     free(_City);
 
@@ -211,6 +208,7 @@ void City_DisplayLinkedListCities(LinkedListCities* _LLC)
 
 /* get city by name, returns NULL in case of no city found*/
 City* City_FindCity(LinkedListCities* _LLC, const char* _Name) {
+    printf("Searching for: %s\n", _Name);
     City* current = _LLC->head;
 
     while (current != NULL) {
@@ -226,9 +224,12 @@ City* City_FindCity(LinkedListCities* _LLC, const char* _Name) {
 int City_SaveToJsonFile(const char* _Name, const char* _Latitude, const char* _Longitude){    
     size_t memoryNeeded = strlen(_Name) + strlen(_Latitude) + strlen(_Longitude) + strlen("cachedcity/") + strlen(".json") + 1;
     char* jsonFilePath = malloc(memoryNeeded); /* +4 for ".json" and +1 for null terminator */
+
+    printf("Adding cachedcity/%s%.7s%.7s.json\n", _Name, _Latitude, _Longitude);
+
     sprintf(jsonFilePath, "cachedcity/%s%.7s%.7s.json", _Name, _Latitude, _Longitude);
 
-    FILE* file = fopen(jsonFilePath, "w");
+    FILE* file = fopen(jsonFilePath, L"w");
     if (file == NULL){
         printf("Error opening file %s", jsonFilePath);
         perror("Error opening file");
