@@ -3,7 +3,7 @@
 This project is a work in progress weatherclient that is currently being written in **C90**
 
 ## What the WeatherClient does
-`This project is a console-based weather application written in C. It allows users to interactively select cities, fetch weather reports, and manage a local cache of city data. The application features an interactive command-line interface, supports adding, removing, and editing city entries, and retrieves weather data (from an API via HTTP requests). City and weather data are serialized to and loaded from JSON files.`
+`This project is a console-based weather application written in C. It allows users to interactively select cities, fetch weather reports, and manage a local cache of city data. If the data is older than 15 minutes, the application fetches new information. The application features an interactive command-line interface, supports adding, removing, and editing city entries, and retrieves weather data (from an API via HTTP requests). City and weather data are serialized to and loaded from JSON files.`
 
 `Key Features:`
 
@@ -25,23 +25,29 @@ This project is a work in progress weatherclient that is currently being written
 2. `User selects a city or manages the city list (add, edit, remove).`
 3. `Weather data is fetched and displayed for the selected city.`
 4. `Data is cached locally to speed up subsequent access and reduce API calls.`
+5. `To exit the program the user only has to type 'Q', 'Quit', 'E' or 'Exit'.`
 
 ## Demo
 ```bash
 $ ./chas_malmo_weather
 <===================# Welcome to the Weather App! #===================>
 
-Malmö
-Stockholm
-Gothenburg
+Stockholm      Göteborg      Malmö        Uppsala        Västerås
+Örebro         Linköping     Helsingborg  Jönköping      Norrköping
 
 Options(O/0) for options, Exit(E/Q) to exit.
 Select a city: Malmö
 
-Current weather for Malmö:
-Temperature: 18°C
-Condition: Sunny
-Humidity: 60%
+Weather report has expired (cached 671388 seconds ago).
+Retrieving new weather data...
+
+City:                   Malmö (Lat: 55.6050 Lon: 13.0038)
+Temperature:            13 °C
+Windspeed:              2.40 m/s
+Wind direction:         West
+Description:            Overcast
+Precipitation:          0.00 mm
+Time stamp:             202510070945
 ```
 
 ## Prerequisites to build
@@ -76,7 +82,9 @@ src/
 ├── main.c                # App entry point
 ├── ui/ClientUI.c         # Console UI logic
 ├── city/City.c           # City management
+├── city/LinkedListCity.c # Handles the LinkedList and all other Cityfunctions
 ├── weather/Weather.c     # Weather fetching & display
+├── ui/ClientUI.c         # The Client management
 ├── mcore/http/http.c     # HTTP requests (libcurl)
 ├── mcore/json/cJSON/     # JSON parsing library
 └── ...                   # Utilities and helpers
@@ -86,9 +94,6 @@ src/
 1. `Clone repo and create a new branch: $ git checkout https://github.com/samstalhandske/chas_malmo_weather -b new_branch_not_yet_named.`
 2. `Make changes and test.`
 3. `Submit pull request with clear and descriptive change notes`
-
-## Donations
-`This is a project from the Malmo-branch of CHAS Academy and we are all students working on this project and as of now this is just a school project, so we are not accepting any donations. But be on the lookout for upcoming projects`
 
 ## Acknowledgments
 - [cJSON](https://github.com/DaveGamble/cJSON) for JSON parsing
@@ -103,3 +108,6 @@ src/
 - [Henrik Westerlund](https://github.com/Henrik-Westerlund)
 - [Isa Shipshani](https://github.com/isashiphotmailcom)
 - [Jonathan Alestam](https://github.com/JonathanAlestam)
+
+## Donations
+`This is a project from the Malmo-branch of CHAS Academy and we are all students working on this project and as of now this is just a school project, so we are not accepting any donations. But be on the lookout for more upcoming projects over the next two years`
